@@ -162,6 +162,18 @@ canvas#cam{width:100%;height:100%;object-fit:cover;display:block;}
 .fab-begin{background:rgba(26,86,219,.92);color:#fff;}
 .fab-stop{background:rgba(220,38,38,.92);color:#fff;display:none;}
 .fab-report{background:rgba(14,159,110,.92);color:#fff;}
+.cam-flip-btn{
+  position:absolute;top:14px;right:14px;z-index:25;
+  background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);
+  border-radius:50%;width:40px;height:40px;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;font-size:1.1rem;backdrop-filter:blur(8px);
+  -webkit-backdrop-filter:blur(8px);transition:background .2s,transform .15s;color:#fff;
+}
+.cam-flip-btn:hover{background:rgba(255,255,255,.28);}
+.cam-flip-btn:active{transform:scale(.92);}
+.cam-flip-btn.spinning{animation:spin360 .4s ease-out;}
+@keyframes spin360{from{transform:rotate(0deg)}to{transform:rotate(180deg)}}
 
 /* ══ TABLET ══ */
 @media(min-width:768px)and(max-width:1023px){
@@ -263,8 +275,12 @@ canvas#cam{width:100%;height:100%;object-fit:cover;display:block;}
         <div class="cam-title" id="camTitle">PhysioAssess · Clinical Movement Analysis</div>
         <div class="cam-sub" id="camSub">Select an assessment and press Begin</div>
       </div>
-      <div class="rec-pill" id="recPill" style="display:none"><div class="rec-dot"></div>REC</div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div class="rec-pill" id="recPill" style="display:none"><div class="rec-dot"></div>REC</div>
+      </div>
     </div>
+    <!-- Camera flip button -->
+    <button class="cam-flip-btn" id="camFlipBtn" onclick="flipCamera()" title="Switch camera">🔄</button>
     <div class="cam-overlay-bottom">
       <div class="metrics-row">
         <div class="metric-chip"><div class="metric-chip-label">Angle</div><div class="metric-chip-val" id="m-angle">—°</div></div>
@@ -634,9 +650,63 @@ pose.onResults(results=>{
   if(!results.poseLandmarks&&state.isRecording){camCtx.fillStyle='rgba(239,68,68,.12)';camCtx.fillRect(0,0,w,h);}
 });
 
-const isMobile=/Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
-const camera=new Camera(videoEl,{onFrame:async()=>{await pose.send({image:videoEl});},width:1280,height:720});
-camera.start().then(()=>{document.getElementById('startPrompt').classList.add('hidden');});
+// Camera management with front/back switching
+let currentFacingMode = 'user'; // 'user' = front, 'environment' = back
+let activeCameraStream = null;
+let cameraInstance = null;
+
+async function startCamera(facingMode) {
+  // Stop existing stream
+  if (activeCameraStream) {
+    activeCameraStream.getTracks().forEach(t => t.stop());
+    activeCameraStream = null;
+  }
+  if (cameraInstance) {
+    try { await cameraInstance.stop(); } catch(e) {}
+    cameraInstance = null;
+  }
+
+  currentFacingMode = facingMode;
+
+  // Update canvas mirror: front cam should mirror, back cam should not
+  camCanvas.style.transform = facingMode === 'user' ? 'scaleX(-1)' : 'scaleX(1)';
+
+  // Update flip button tooltip
+  const btn = document.getElementById('camFlipBtn');
+  btn.title = facingMode === 'user' ? 'Switch to rear camera' : 'Switch to front camera';
+
+  cameraInstance = new Camera(videoEl, {
+    onFrame: async () => { await pose.send({image: videoEl}); },
+    width: 1280, height: 720,
+    facingMode: facingMode,
+  });
+
+  try {
+    await cameraInstance.start();
+    // Store the stream reference for stopping later
+    activeCameraStream = videoEl.srcObject;
+    document.getElementById('startPrompt').classList.add('hidden');
+  } catch(err) {
+    console.warn('Camera start failed:', err);
+    // If rear camera fails (e.g. on desktop), fall back to front
+    if (facingMode === 'environment') {
+      console.log('Rear camera unavailable, falling back to front');
+      startCamera('user');
+    }
+  }
+}
+
+async function flipCamera() {
+  const btn = document.getElementById('camFlipBtn');
+  btn.classList.add('spinning');
+  setTimeout(() => btn.classList.remove('spinning'), 400);
+
+  const newMode = currentFacingMode === 'user' ? 'environment' : 'user';
+  await startCamera(newMode);
+}
+
+// Start with front camera by default
+startCamera('user');
 
 document.getElementById('sessionDate').textContent=new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
 selectAssessment(0);initChart();syncFabs();
