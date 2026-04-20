@@ -2,375 +2,230 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>PhysioAssess — Clinical Movement Analysis</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="theme-color" content="#0a0c0f"/>
+<title>PhysioAssess</title>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
-:root {
-  --bg:        #f0f2f5;
-  --bg2:       #ffffff;
-  --bg3:       #e8eaed;
-  --border:    #d0d5dd;
-  --text:      #1a2332;
-  --muted:     #6b7a8d;
-  --accent:    #1a56db;
-  --accent2:   #0e9f6e;
-  --warn:      #e3a008;
-  --danger:    #e02424;
-  --card:      #ffffff;
-  --mono:      'IBM Plex Mono', monospace;
-  --sans:      'IBM Plex Sans', sans-serif;
-  --shadow:    0 1px 3px rgba(0,0,0,0.08), 0 4px 16px rgba(0,0,0,0.06);
-  --shadow-lg: 0 4px 24px rgba(0,0,0,0.12);
-}
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-body { background: var(--bg); color: var(--text); font-family: var(--sans); min-height: 100vh; font-size: 14px; }
-
-/* ── HEADER ── */
-header {
-  background: var(--bg2);
-  border-bottom: 1px solid var(--border);
-  padding: 0 24px;
-  height: 56px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  position: sticky; top: 0; z-index: 100;
-  box-shadow: var(--shadow);
-}
-.logo {
-  font-family: var(--mono);
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: var(--accent);
-  letter-spacing: -0.5px;
-}
-.logo span { color: var(--text); }
-.header-right { display: flex; align-items: center; gap: 16px; }
-.patient-badge {
-  display: flex; align-items: center; gap: 8px;
-  background: var(--bg3); border: 1px solid var(--border);
-  border-radius: 6px; padding: 6px 12px;
-  font-family: var(--mono); font-size: 0.72rem; color: var(--muted);
-}
-.patient-badge input {
-  background: none; border: none; outline: none;
-  font-family: var(--mono); font-size: 0.72rem;
-  color: var(--text); width: 140px;
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;font-family:'IBM Plex Sans',sans-serif;font-size:14px;}
+body{background:#0a0c0f;color:#1a2332;overflow:hidden;}
+:root{
+  --bg:#f0f2f5;--bg2:#ffffff;--bg3:#e8eaed;--border:#d0d5dd;
+  --text:#1a2332;--muted:#6b7a8d;--accent:#1a56db;--accent2:#0e9f6e;
+  --warn:#e3a008;--danger:#e02424;
+  --shadow:0 1px 3px rgba(0,0,0,0.08),0 4px 16px rgba(0,0,0,0.06);
+  --shadow-lg:0 4px 24px rgba(0,0,0,0.12);
+  --safe-top:env(safe-area-inset-top,0px);
+  --safe-bot:env(safe-area-inset-bottom,0px);
 }
 
-/* ── LAYOUT ── */
-.layout {
-  display: grid;
-  grid-template-columns: 260px 1fr 300px;
-  height: calc(100vh - 56px);
-  overflow: hidden;
+/* ══ HEADER ══ */
+header{
+  background:var(--bg2);border-bottom:1px solid var(--border);
+  height:56px;display:flex;align-items:center;justify-content:space-between;
+  padding:0 20px;padding-top:var(--safe-top);
+  position:sticky;top:0;z-index:200;box-shadow:var(--shadow);flex-shrink:0;
+}
+.logo{font-family:'IBM Plex Mono',monospace;font-size:1.1rem;font-weight:600;color:var(--accent);letter-spacing:-0.5px;}
+.logo span{color:var(--text);}
+.header-right{display:flex;align-items:center;gap:12px;}
+.patient-badge{display:flex;align-items:center;gap:8px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:6px 12px;font-family:'IBM Plex Mono',monospace;font-size:0.72rem;color:var(--muted);}
+.patient-badge input{background:none;border:none;outline:none;font-family:'IBM Plex Mono',monospace;font-size:0.72rem;color:var(--text);width:140px;}
+.session-wrap{display:flex;align-items:center;gap:8px;}
+
+/* ══ DESKTOP LAYOUT ══ */
+.layout-shell{display:flex;flex-direction:column;height:100vh;}
+.main-grid{display:grid;grid-template-columns:260px 1fr 300px;flex:1;overflow:hidden;min-height:0;}
+
+/* ══ LEFT PANEL ══ */
+.left-panel{background:var(--bg2);border-right:1px solid var(--border);overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:8px;}
+.panel-title{font-family:'IBM Plex Mono',monospace;font-size:0.62rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:2px;padding:4px 0 8px;border-bottom:1px solid var(--border);margin-bottom:4px;}
+.assess-card{border:1px solid var(--border);border-radius:8px;padding:12px;cursor:pointer;transition:all .18s;background:var(--bg);position:relative;}
+.assess-card:hover{border-color:var(--accent);background:#eff4ff;}
+.assess-card.active{border-color:var(--accent);background:#eff4ff;box-shadow:0 0 0 2px rgba(26,86,219,.15);}
+.assess-card.done{border-color:var(--accent2);background:#f0fdf4;}
+.assess-name{font-weight:600;font-size:.82rem;color:var(--text);margin-bottom:3px;}
+.assess-card.active .assess-name{color:var(--accent);}
+.assess-card.done .assess-name{color:var(--accent2);}
+.assess-meta{font-family:'IBM Plex Mono',monospace;font-size:.62rem;color:var(--muted);}
+.assess-badge{position:absolute;top:10px;right:10px;font-family:'IBM Plex Mono',monospace;font-size:.58rem;font-weight:600;padding:2px 7px;border-radius:10px;background:var(--bg3);color:var(--muted);}
+.assess-card.done .assess-badge{background:#d1fae5;color:var(--accent2);}
+.assess-card.active .assess-badge{background:#dbeafe;color:var(--accent);}
+.side-selector{display:flex;gap:6px;margin-top:20px;}
+.side-btn{flex:1;padding:8px;border-radius:6px;border:1px solid var(--border);background:var(--bg);font-family:'IBM Plex Mono',monospace;font-size:.7rem;cursor:pointer;transition:all .15s;color:var(--muted);}
+.side-btn.active{background:var(--accent);color:#fff;border-color:var(--accent);}
+.start-btn{margin-top:12px;width:100%;padding:11px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-family:'IBM Plex Mono',monospace;font-size:.75rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:all .15s;}
+.start-btn:hover{background:#1447c0;}
+.report-btn{margin-top:8px;width:100%;padding:11px;background:var(--bg2);color:var(--accent2);border:1px solid var(--accent2);border-radius:8px;font-family:'IBM Plex Mono',monospace;font-size:.75rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;cursor:pointer;}
+.report-btn:hover{background:#f0fdf4;}
+
+/* ══ CAMERA ══ */
+.center-panel{position:relative;background:#0a0c0f;overflow:hidden;}
+video{display:none;}
+canvas#cam{width:100%;height:100%;object-fit:cover;display:block;}
+.cam-overlay-top{position:absolute;top:0;left:0;right:0;padding:14px 18px;background:linear-gradient(180deg,rgba(10,12,15,.85) 0%,transparent 100%);display:flex;justify-content:space-between;align-items:flex-start;}
+.cam-title{font-family:'IBM Plex Mono',monospace;font-size:.8rem;font-weight:600;color:#fff;}
+.cam-sub{font-family:'IBM Plex Mono',monospace;font-size:.62rem;color:rgba(255,255,255,.5);margin-top:2px;}
+.rec-pill{display:flex;align-items:center;gap:6px;background:rgba(224,36,36,.2);border:1px solid rgba(224,36,36,.4);border-radius:20px;padding:4px 12px;font-family:'IBM Plex Mono',monospace;font-size:.62rem;color:#fca5a5;}
+.rec-dot{width:6px;height:6px;border-radius:50%;background:var(--danger);animation:blink 1.2s ease-in-out infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+.cam-overlay-bottom{position:absolute;bottom:0;left:0;right:0;padding:14px 18px;background:linear-gradient(0deg,rgba(10,12,15,.9) 0%,transparent 100%);}
+.metrics-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+.metric-chip{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:8px 10px;backdrop-filter:blur(8px);}
+.metric-chip-label{font-family:'IBM Plex Mono',monospace;font-size:.55rem;color:rgba(255,255,255,.45);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:3px;}
+.metric-chip-val{font-family:'IBM Plex Mono',monospace;font-size:1.1rem;font-weight:600;color:#fff;}
+.metric-chip-val.good{color:#34d399;}.metric-chip-val.warn{color:#fbbf24;}.metric-chip-val.bad{color:#f87171;}
+.start-prompt{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(10,12,15,.94);z-index:10;transition:opacity .4s;}
+.start-prompt.hidden{opacity:0;pointer-events:none;}
+.sp-icon{font-size:4rem;margin-bottom:16px;}.sp-title{font-family:'IBM Plex Mono',monospace;font-size:1.4rem;font-weight:600;color:#fff;margin-bottom:8px;}
+.sp-sub{font-family:'IBM Plex Mono',monospace;font-size:.72rem;color:rgba(255,255,255,.4);text-align:center;max-width:340px;line-height:1.6;}
+
+/* ══ RIGHT PANEL ══ */
+.right-panel{background:var(--bg2);border-left:1px solid var(--border);overflow-y:auto;display:flex;flex-direction:column;}
+.r-section{padding:14px 16px;border-bottom:1px solid var(--border);}
+.r-section:last-child{border-bottom:none;}
+.r-label{font-family:'IBM Plex Mono',monospace;font-size:.6rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:2px;margin-bottom:10px;}
+.gauge-wrap{display:flex;align-items:center;gap:14px;}
+.gauge{position:relative;width:80px;height:80px;flex-shrink:0;}
+.gauge svg{transform:rotate(-90deg);}
+.gauge circle.bg{fill:none;stroke:var(--bg3);stroke-width:7;}
+.gauge circle.fg{fill:none;stroke:var(--accent);stroke-width:7;stroke-linecap:round;stroke-dasharray:201;stroke-dashoffset:201;transition:stroke-dashoffset .2s,stroke .2s;}
+.gauge-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.gauge-val{font-family:'IBM Plex Mono',monospace;font-size:1.1rem;font-weight:600;color:var(--text);}
+.gauge-unit{font-family:'IBM Plex Mono',monospace;font-size:.55rem;color:var(--muted);}
+.gauge-info{flex:1;}
+.gauge-name{font-weight:600;font-size:.82rem;margin-bottom:4px;}
+.gauge-range{font-family:'IBM Plex Mono',monospace;font-size:.62rem;color:var(--muted);margin-bottom:6px;}
+.gauge-bar{height:4px;background:var(--bg3);border-radius:2px;overflow:hidden;}
+.gauge-bar-fill{height:100%;background:var(--accent);border-radius:2px;transition:width .2s;}
+.flag-list{display:flex;flex-direction:column;gap:6px;}
+.flag-item{display:flex;align-items:flex-start;gap:8px;padding:8px 10px;border-radius:6px;font-size:.75rem;font-weight:500;border:1px solid transparent;}
+.flag-item.ok{background:#f0fdf4;border-color:#bbf7d0;color:#065f46;}
+.flag-item.warn{background:#fffbeb;border-color:#fde68a;color:#92400e;}
+.flag-item.bad{background:#fef2f2;border-color:#fecaca;color:#991b1b;}
+.flag-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:4px;}
+.flag-item.ok .flag-dot{background:#10b981;}.flag-item.warn .flag-dot{background:#f59e0b;}.flag-item.bad .flag-dot{background:#ef4444;}
+.chart-wrap{height:120px;position:relative;}
+.trial-table{width:100%;border-collapse:collapse;}
+.trial-table th{font-family:'IBM Plex Mono',monospace;font-size:.58rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);padding:6px 8px;text-align:left;border-bottom:1px solid var(--border);}
+.trial-table td{font-family:'IBM Plex Mono',monospace;font-size:.72rem;padding:6px 8px;border-bottom:1px solid var(--bg3);}
+.grade-badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:.6rem;font-weight:600;}
+.grade-A{background:#d1fae5;color:#065f46;}.grade-B{background:#dbeafe;color:#1e40af;}.grade-C{background:#fef3c7;color:#92400e;}.grade-D{background:#fee2e2;color:#991b1b;}
+
+/* ══ MODAL ══ */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:1000;opacity:0;pointer-events:none;transition:opacity .3s;padding:16px;}
+.modal-overlay.show{opacity:1;pointer-events:all;}
+.modal{background:var(--bg2);border-radius:12px;width:100%;max-width:680px;max-height:90vh;overflow-y:auto;box-shadow:var(--shadow-lg);padding:24px;transform:translateY(20px);transition:transform .3s;}
+.modal-overlay.show .modal{transform:translateY(0);}
+.modal-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;}
+.modal-title{font-size:1.1rem;font-weight:700;}
+.modal-close{background:none;border:none;font-size:1.4rem;cursor:pointer;color:var(--muted);padding:4px 8px;border-radius:4px;line-height:1;}
+.report-section{margin-bottom:24px;}
+.report-section-title{font-family:'IBM Plex Mono',monospace;font-size:.65rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:2px;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border);}
+.report-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.report-card{background:var(--bg3);border-radius:8px;padding:12px;}
+.report-card-label{font-family:'IBM Plex Mono',monospace;font-size:.6rem;color:var(--muted);text-transform:uppercase;margin-bottom:4px;}
+.report-card-val{font-family:'IBM Plex Mono',monospace;font-size:1.2rem;font-weight:600;color:var(--text);}
+.report-card-sub{font-size:.72rem;color:var(--muted);margin-top:2px;}
+.report-finding{display:flex;gap:10px;padding:8px 10px;border-radius:6px;margin-bottom:6px;font-size:.78rem;line-height:1.5;}
+.report-finding.positive{background:#f0fdf4;}.report-finding.negative{background:#fef2f2;}.report-finding.neutral{background:#f8fafc;}
+.export-row{display:flex;gap:8px;margin-top:20px;flex-wrap:wrap;}
+.export-btn{flex:1;min-width:90px;padding:11px;border-radius:8px;border:none;cursor:pointer;font-family:'IBM Plex Mono',monospace;font-size:.7rem;font-weight:600;text-transform:uppercase;letter-spacing:1px;}
+.export-btn.primary{background:var(--accent);color:#fff;}
+.export-btn.secondary{background:var(--bg3);color:var(--text);border:1px solid var(--border);}
+
+/* ══ MOBILE BOTTOM NAV ══ */
+.mobile-nav{display:none;position:fixed;bottom:0;left:0;right:0;z-index:300;background:var(--bg2);border-top:1px solid var(--border);padding-bottom:var(--safe-bot);}
+.mobile-nav-tabs{display:flex;}
+.mnav-tab{flex:1;padding:9px 4px 7px;border:none;background:none;font-family:'IBM Plex Mono',monospace;font-size:.56rem;color:var(--muted);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;letter-spacing:.5px;text-transform:uppercase;}
+.mnav-tab .ti{font-size:1.1rem;}
+.mnav-tab.active{color:var(--accent);}
+
+/* ══ MOBILE DRAWER ══ */
+.drawer-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:350;}
+.drawer-overlay.open{display:block;}
+.mobile-drawer{display:none;position:fixed;bottom:0;left:0;right:0;z-index:400;background:var(--bg2);border-top:2px solid var(--accent);border-radius:16px 16px 0 0;max-height:78vh;overflow-y:auto;transform:translateY(100%);transition:transform .3s cubic-bezier(.32,.72,0,1);padding-bottom:var(--safe-bot);}
+.mobile-drawer.open{transform:translateY(0);}
+.drawer-handle{width:36px;height:4px;background:var(--border);border-radius:2px;margin:10px auto 4px;}
+.drawer-close{position:absolute;top:6px;right:14px;background:none;border:none;font-size:1.2rem;color:var(--muted);cursor:pointer;padding:6px;}
+.drawer-body{padding:4px 16px 20px;}
+
+/* Floating action buttons on camera */
+.cam-fabs{display:none;position:absolute;bottom:120px;left:50%;transform:translateX(-50%);gap:10px;z-index:20;white-space:nowrap;}
+.fab{padding:11px 20px;border-radius:24px;border:none;cursor:pointer;font-family:'IBM Plex Mono',monospace;font-size:.72rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);}
+.fab-begin{background:rgba(26,86,219,.92);color:#fff;}
+.fab-stop{background:rgba(220,38,38,.92);color:#fff;display:none;}
+.fab-report{background:rgba(14,159,110,.92);color:#fff;}
+
+/* ══ TABLET ══ */
+@media(min-width:768px)and(max-width:1023px){
+  .main-grid{grid-template-columns:220px 1fr 240px;}
+  .patient-badge input{width:100px;}
+  .session-wrap{display:none;}
+  .metrics-row{grid-template-columns:repeat(2,1fr);}
+  .metric-chip-val{font-size:.9rem;}
 }
 
-/* ── LEFT PANEL — Assessment Menu ── */
-.left-panel {
-  background: var(--bg2);
-  border-right: 1px solid var(--border);
-  overflow-y: auto;
-  padding: 16px;
-  display: flex; flex-direction: column; gap: 8px;
-}
-.panel-title {
-  font-family: var(--mono); font-size: 0.62rem; font-weight: 600;
-  color: var(--muted); text-transform: uppercase; letter-spacing: 2px;
-  padding: 4px 0 8px; border-bottom: 1px solid var(--border); margin-bottom: 4px;
-}
-
-.assess-card {
-  border: 1px solid var(--border);
-  border-radius: 8px; padding: 12px;
-  cursor: pointer; transition: all 0.18s;
-  background: var(--bg);
-  position: relative;
-}
-.assess-card:hover { border-color: var(--accent); background: #eff4ff; }
-.assess-card.active {
-  border-color: var(--accent);
-  background: #eff4ff;
-  box-shadow: 0 0 0 2px rgba(26,86,219,0.15);
-}
-.assess-card.done { border-color: var(--accent2); background: #f0fdf4; }
-.assess-name {
-  font-weight: 600; font-size: 0.82rem; color: var(--text); margin-bottom: 3px;
-}
-.assess-card.active .assess-name { color: var(--accent); }
-.assess-card.done .assess-name { color: var(--accent2); }
-.assess-meta { font-family: var(--mono); font-size: 0.62rem; color: var(--muted); }
-.assess-badge {
-  position: absolute; top: 10px; right: 10px;
-  font-family: var(--mono); font-size: 0.58rem; font-weight: 600;
-  padding: 2px 7px; border-radius: 10px;
-  background: var(--bg3); color: var(--muted);
-}
-.assess-card.done .assess-badge { background: #d1fae5; color: var(--accent2); }
-.assess-card.active .assess-badge { background: #dbeafe; color: var(--accent); }
-
-.side-selector {
-  display: flex; gap: 6px; margin-top: 20px;
-}
-.side-btn {
-  flex: 1; padding: 8px; border-radius: 6px;
-  border: 1px solid var(--border); background: var(--bg);
-  font-family: var(--mono); font-size: 0.7rem; cursor: pointer;
-  transition: all 0.15s; color: var(--muted);
-}
-.side-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
-
-.start-btn {
-  margin-top: 12px;
-  width: 100%; padding: 10px;
-  background: var(--accent); color: #fff;
-  border: none; border-radius: 8px;
-  font-family: var(--mono); font-size: 0.75rem; font-weight: 600;
-  letter-spacing: 1px; text-transform: uppercase;
-  cursor: pointer; transition: all 0.15s;
-}
-.start-btn:hover { background: #1447c0; }
-.start-btn:disabled { background: var(--bg3); color: var(--muted); cursor: not-allowed; }
-
-.report-btn {
-  margin-top: 8px;
-  width: 100%; padding: 10px;
-  background: var(--bg2); color: var(--accent2);
-  border: 1px solid var(--accent2); border-radius: 8px;
-  font-family: var(--mono); font-size: 0.75rem; font-weight: 600;
-  letter-spacing: 1px; text-transform: uppercase;
-  cursor: pointer; transition: all 0.15s;
-}
-.report-btn:hover { background: #f0fdf4; }
-
-/* ── CENTER — Camera ── */
-.center-panel { position: relative; background: #0a0c0f; overflow: hidden; }
-video { display: none; }
-canvas#cam { width: 100%; height: 100%; object-fit: cover; display: block; }
-
-.cam-overlay-top {
-  position: absolute; top: 0; left: 0; right: 0;
-  padding: 14px 18px;
-  background: linear-gradient(180deg, rgba(10,12,15,0.85) 0%, transparent 100%);
-  display: flex; justify-content: space-between; align-items: flex-start;
-}
-.cam-title { font-family: var(--mono); font-size: 0.8rem; font-weight: 600; color: #fff; }
-.cam-sub   { font-family: var(--mono); font-size: 0.62rem; color: rgba(255,255,255,0.5); margin-top: 2px; }
-.rec-pill {
-  display: flex; align-items: center; gap: 6px;
-  background: rgba(224,36,36,0.2); border: 1px solid rgba(224,36,36,0.4);
-  border-radius: 20px; padding: 4px 12px;
-  font-family: var(--mono); font-size: 0.62rem; color: #fca5a5;
-}
-.rec-dot {
-  width: 6px; height: 6px; border-radius: 50%;
-  background: var(--danger);
-  animation: blink 1.2s ease-in-out infinite;
-}
-@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
-
-.cam-overlay-bottom {
-  position: absolute; bottom: 0; left: 0; right: 0;
-  padding: 14px 18px;
-  background: linear-gradient(0deg, rgba(10,12,15,0.9) 0%, transparent 100%);
-}
-.metrics-row {
-  display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
-}
-.metric-chip {
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 8px; padding: 8px 10px;
-  backdrop-filter: blur(8px);
-}
-.metric-chip-label { font-family: var(--mono); font-size: 0.55rem; color: rgba(255,255,255,0.45); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 3px; }
-.metric-chip-val   { font-family: var(--mono); font-size: 1.1rem; font-weight: 600; color: #fff; }
-.metric-chip-val.good  { color: #34d399; }
-.metric-chip-val.warn  { color: #fbbf24; }
-.metric-chip-val.bad   { color: #f87171; }
-
-/* Start prompt */
-.start-prompt {
-  position: absolute; inset: 0;
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  background: rgba(10,12,15,0.94);
-  z-index: 10; transition: opacity 0.4s;
-}
-.start-prompt.hidden { opacity: 0; pointer-events: none; }
-.sp-icon { font-size: 4rem; margin-bottom: 16px; }
-.sp-title { font-family: var(--mono); font-size: 1.4rem; font-weight: 600; color: #fff; margin-bottom: 8px; }
-.sp-sub   { font-family: var(--mono); font-size: 0.72rem; color: rgba(255,255,255,0.4); text-align: center; max-width: 340px; line-height: 1.6; }
-
-/* Target object on canvas */
-.target-el {
-  position: absolute;
-  pointer-events: none;
-  transition: opacity 0.3s;
+/* ══ MOBILE ══ */
+@media(max-width:767px){
+  header{height:50px;padding:0 14px;}
+  .logo{font-size:.95rem;}
+  .session-wrap{display:none;}
+  .patient-badge input{width:120px;}
+  .main-grid{grid-template-columns:1fr;grid-template-rows:1fr;}
+  .left-panel,.right-panel{display:none;}
+  .center-panel{height:calc(100dvh - 50px - 50px);}
+  .metrics-row{grid-template-columns:repeat(2,1fr);gap:6px;}
+  .metric-chip{padding:6px 8px;}
+  .metric-chip-val{font-size:.9rem;}
+  .metric-chip-label{font-size:.5rem;}
+  .cam-overlay-top{padding:8px 12px;}
+  .cam-title{font-size:.7rem;}
+  .cam-sub{font-size:.58rem;}
+  .cam-overlay-bottom{padding:8px 10px 4px;}
+  .sp-icon{font-size:2.8rem;}
+  .sp-title{font-size:1rem;}
+  .sp-sub{font-size:.62rem;max-width:260px;}
+  .mobile-nav{display:block;}
+  .mobile-drawer{display:block;}
+  .cam-fabs{display:flex;}
 }
 
-/* ── RIGHT PANEL — Live Analysis ── */
-.right-panel {
-  background: var(--bg2);
-  border-left: 1px solid var(--border);
-  overflow-y: auto;
-  display: flex; flex-direction: column;
+@media print{
+  .mobile-nav,.mobile-drawer,.drawer-overlay,.cam-fabs,header,.main-grid{display:none!important;}
+  .modal-overlay{position:static;opacity:1;padding:0;background:none;}
+  .modal{box-shadow:none;max-height:none;transform:none;}
 }
-
-.r-section {
-  padding: 14px 16px;
-  border-bottom: 1px solid var(--border);
-}
-.r-section:last-child { border-bottom: none; }
-.r-label {
-  font-family: var(--mono); font-size: 0.6rem; font-weight: 600;
-  color: var(--muted); text-transform: uppercase; letter-spacing: 2px;
-  margin-bottom: 10px;
-}
-
-/* Angle gauge */
-.gauge-wrap { display: flex; align-items: center; gap: 14px; }
-.gauge {
-  position: relative; width: 80px; height: 80px; flex-shrink: 0;
-}
-.gauge svg { transform: rotate(-90deg); }
-.gauge circle.bg { fill:none; stroke:var(--bg3); stroke-width:7; }
-.gauge circle.fg {
-  fill:none; stroke:var(--accent); stroke-width:7;
-  stroke-linecap: round;
-  stroke-dasharray: 201;
-  stroke-dashoffset: 201;
-  transition: stroke-dashoffset 0.2s, stroke 0.2s;
-}
-.gauge-center {
-  position:absolute; inset:0; display:flex; flex-direction:column;
-  align-items:center; justify-content:center;
-}
-.gauge-val { font-family:var(--mono); font-size:1.1rem; font-weight:600; color:var(--text); }
-.gauge-unit { font-family:var(--mono); font-size:0.55rem; color:var(--muted); }
-.gauge-info { flex:1; }
-.gauge-name { font-weight:600; font-size:0.82rem; margin-bottom:4px; }
-.gauge-range { font-family:var(--mono); font-size:0.62rem; color:var(--muted); margin-bottom:6px; }
-.gauge-bar { height:4px; background:var(--bg3); border-radius:2px; overflow:hidden; }
-.gauge-bar-fill { height:100%; background:var(--accent); border-radius:2px; transition:width 0.2s; }
-
-/* Compensation flags */
-.flag-list { display:flex; flex-direction:column; gap:6px; }
-.flag-item {
-  display:flex; align-items:center; gap:8px;
-  padding:8px 10px; border-radius:6px;
-  font-size:0.78rem; font-weight:500;
-  border: 1px solid transparent;
-}
-.flag-item.ok   { background:#f0fdf4; border-color:#bbf7d0; color:#065f46; }
-.flag-item.warn { background:#fffbeb; border-color:#fde68a; color:#92400e; }
-.flag-item.bad  { background:#fef2f2; border-color:#fecaca; color:#991b1b; }
-.flag-dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
-.flag-item.ok   .flag-dot { background:#10b981; }
-.flag-item.warn .flag-dot { background:#f59e0b; }
-.flag-item.bad  .flag-dot { background:#ef4444; }
-
-/* Chart */
-.chart-wrap { height: 120px; position: relative; }
-
-/* Trial table */
-.trial-table { width:100%; border-collapse:collapse; }
-.trial-table th {
-  font-family:var(--mono); font-size:0.58rem; text-transform:uppercase;
-  letter-spacing:1.5px; color:var(--muted); padding:6px 8px;
-  text-align:left; border-bottom:1px solid var(--border);
-}
-.trial-table td {
-  font-family:var(--mono); font-size:0.72rem; padding:6px 8px;
-  border-bottom:1px solid var(--bg3);
-}
-.grade-badge {
-  display:inline-block; padding:2px 8px; border-radius:10px;
-  font-size:0.6rem; font-weight:600;
-}
-.grade-A { background:#d1fae5; color:#065f46; }
-.grade-B { background:#dbeafe; color:#1e40af; }
-.grade-C { background:#fef3c7; color:#92400e; }
-.grade-D { background:#fee2e2; color:#991b1b; }
-
-/* ── REPORT MODAL ── */
-.modal-overlay {
-  position:fixed; inset:0; background:rgba(0,0,0,0.5);
-  display:flex; align-items:center; justify-content:center;
-  z-index:1000; opacity:0; pointer-events:none; transition:opacity 0.3s;
-}
-.modal-overlay.show { opacity:1; pointer-events:all; }
-.modal {
-  background:var(--bg2); border-radius:12px; width:680px; max-height:85vh;
-  overflow-y:auto; box-shadow:var(--shadow-lg); padding:28px;
-  transform:translateY(20px); transition:transform 0.3s;
-}
-.modal-overlay.show .modal { transform:translateY(0); }
-.modal-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:24px; }
-.modal-title { font-size:1.1rem; font-weight:700; }
-.modal-close {
-  background:none; border:none; font-size:1.2rem; cursor:pointer;
-  color:var(--muted); padding:4px; border-radius:4px;
-}
-.modal-close:hover { background:var(--bg3); }
-.report-section { margin-bottom:24px; }
-.report-section-title {
-  font-family:var(--mono); font-size:0.65rem; font-weight:600;
-  color:var(--muted); text-transform:uppercase; letter-spacing:2px;
-  margin-bottom:10px; padding-bottom:6px; border-bottom:1px solid var(--border);
-}
-.report-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-.report-card {
-  background:var(--bg3); border-radius:8px; padding:12px;
-}
-.report-card-label { font-family:var(--mono); font-size:0.6rem; color:var(--muted); text-transform:uppercase; margin-bottom:4px; }
-.report-card-val { font-family:var(--mono); font-size:1.2rem; font-weight:600; color:var(--text); }
-.report-card-sub { font-size:0.72rem; color:var(--muted); margin-top:2px; }
-.report-finding {
-  display:flex; gap:10px; padding:8px 10px;
-  border-radius:6px; margin-bottom:6px; font-size:0.78rem;
-}
-.report-finding.positive { background:#f0fdf4; }
-.report-finding.negative { background:#fef2f2; }
-.report-finding.neutral  { background:#f8fafc; }
-.export-row { display:flex; gap:10px; margin-top:20px; }
-.export-btn {
-  flex:1; padding:10px; border-radius:8px; border:none; cursor:pointer;
-  font-family:var(--mono); font-size:0.72rem; font-weight:600; text-transform:uppercase;
-  letter-spacing:1px; transition:all 0.15s;
-}
-.export-btn.primary { background:var(--accent); color:#fff; }
-.export-btn.primary:hover { background:#1447c0; }
-.export-btn.secondary { background:var(--bg3); color:var(--text); border:1px solid var(--border); }
-.export-btn.secondary:hover { background:var(--border); }
 </style>
 </head>
 <body>
+<div class="layout-shell">
 
 <!-- HEADER -->
 <header>
-  <div>
-    <div class="logo">Physio<span>Assess</span></div>
-  </div>
+  <div class="logo">Physio<span>Assess</span></div>
   <div class="header-right">
     <div class="patient-badge">
-      Patient: <input id="patientName" placeholder="Enter patient name" value=""/>
+      Patient: <input id="patientName" placeholder="Patient name" value=""/>
     </div>
-    <div class="patient-badge">
-      Session: <span id="sessionDate" style="color:var(--text)"></span>
+    <div class="session-wrap">
+      <div class="patient-badge">Session: <span id="sessionDate" style="color:var(--text)"></span></div>
     </div>
   </div>
 </header>
 
-<div class="layout">
+<!-- MAIN GRID -->
+<div class="main-grid">
 
   <!-- LEFT PANEL -->
   <div class="left-panel">
     <div class="panel-title">Assessments</div>
-
     <div class="assess-card active" id="card-0" onclick="selectAssessment(0)">
       <div class="assess-badge" id="badge-0">READY</div>
       <div class="assess-name">Shoulder Flexion</div>
@@ -386,74 +241,53 @@ canvas#cam { width: 100%; height: 100%; object-fit: cover; display: block; }
       <div class="assess-name">Elbow Flexion</div>
       <div class="assess-meta">Target: 0°→145°<br/>Bend elbow toward shoulder</div>
     </div>
-
     <div class="panel-title" style="margin-top:14px">Side</div>
     <div class="side-selector">
       <button class="side-btn active" id="sideL" onclick="selectSide('LEFT')">Left</button>
-      <button class="side-btn"        id="sideR" onclick="selectSide('RIGHT')">Right</button>
+      <button class="side-btn" id="sideR" onclick="selectSide('RIGHT')">Right</button>
     </div>
-
     <div class="panel-title" style="margin-top:14px">Trials</div>
-    <div style="font-family:var(--mono);font-size:0.65rem;color:var(--muted);margin-bottom:6px;">
-      Each assessment records 3 trials. Best ROM is used for report.
-    </div>
-    <div style="font-family:var(--mono);font-size:0.7rem;color:var(--text);">
-      Trial: <span id="trialNum" style="font-weight:600;color:var(--accent)">1</span> / 3
-    </div>
-
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:.65rem;color:var(--muted);margin-bottom:6px;">3 trials per assessment. Best ROM used for report.</div>
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:.7rem;color:var(--text);">Trial: <span id="trialNum" style="font-weight:600;color:var(--accent)">1</span> / 3</div>
     <button class="start-btn" id="startBtn" onclick="startAssessment()">▶ Begin Assessment</button>
     <button class="start-btn" id="stopBtn" onclick="stopAssessment()" style="display:none;background:#dc2626;">■ Stop Trial</button>
     <button class="report-btn" id="reportBtn" onclick="showReport()">📋 Generate Report</button>
   </div>
 
-  <!-- CENTER — CAMERA -->
+  <!-- CAMERA -->
   <div class="center-panel" id="centerPanel">
     <video id="video" playsinline></video>
     <canvas id="cam"></canvas>
-
-    <!-- Overlays -->
     <div class="cam-overlay-top">
       <div>
         <div class="cam-title" id="camTitle">PhysioAssess · Clinical Movement Analysis</div>
         <div class="cam-sub" id="camSub">Select an assessment and press Begin</div>
       </div>
-      <div class="rec-pill" id="recPill" style="display:none">
-        <div class="rec-dot"></div>RECORDING
-      </div>
+      <div class="rec-pill" id="recPill" style="display:none"><div class="rec-dot"></div>REC</div>
     </div>
-
     <div class="cam-overlay-bottom">
       <div class="metrics-row">
-        <div class="metric-chip">
-          <div class="metric-chip-label">Primary Angle</div>
-          <div class="metric-chip-val" id="m-angle">—°</div>
-        </div>
-        <div class="metric-chip">
-          <div class="metric-chip-label">Peak ROM</div>
-          <div class="metric-chip-val" id="m-peak">—°</div>
-        </div>
-        <div class="metric-chip">
-          <div class="metric-chip-label">Torso Lean</div>
-          <div class="metric-chip-val" id="m-torso">—°</div>
-        </div>
-        <div class="metric-chip">
-          <div class="metric-chip-label">Compensation</div>
-          <div class="metric-chip-val" id="m-comp">—</div>
-        </div>
+        <div class="metric-chip"><div class="metric-chip-label">Angle</div><div class="metric-chip-val" id="m-angle">—°</div></div>
+        <div class="metric-chip"><div class="metric-chip-label">Peak ROM</div><div class="metric-chip-val" id="m-peak">—°</div></div>
+        <div class="metric-chip"><div class="metric-chip-label">Torso</div><div class="metric-chip-val" id="m-torso">—°</div></div>
+        <div class="metric-chip"><div class="metric-chip-label">Comp.</div><div class="metric-chip-val" id="m-comp">—</div></div>
       </div>
     </div>
-
+    <!-- Mobile FABs -->
+    <div class="cam-fabs" id="camFabs">
+      <button class="fab fab-begin" id="fabBegin" onclick="startAssessment()">▶ Begin</button>
+      <button class="fab fab-stop" id="fabStop" onclick="stopAssessment()">■ Stop</button>
+      <button class="fab fab-report" onclick="showReport()">📋 Report</button>
+    </div>
     <div class="start-prompt" id="startPrompt">
       <div class="sp-icon">🩺</div>
       <div class="sp-title">PhysioAssess</div>
-      <div class="sp-sub">Clinical movement analysis tool.<br/>Position patient fully in frame.<br/>Select assessment → choose side → Begin.</div>
+      <div class="sp-sub">Position patient fully in frame.<br/>Tap Setup to configure, then Begin.</div>
     </div>
   </div>
 
   <!-- RIGHT PANEL -->
   <div class="right-panel">
-
-    <!-- Primary angle gauge -->
     <div class="r-section">
       <div class="r-label">Primary ROM</div>
       <div class="gauge-wrap">
@@ -462,10 +296,7 @@ canvas#cam { width: 100%; height: 100%; object-fit: cover; display: block; }
             <circle class="bg" cx="35" cy="35" r="32"/>
             <circle class="fg" id="gaugeFg" cx="35" cy="35" r="32"/>
           </svg>
-          <div class="gauge-center">
-            <div class="gauge-val" id="gaugeVal">—</div>
-            <div class="gauge-unit">DEG</div>
-          </div>
+          <div class="gauge-center"><div class="gauge-val" id="gaugeVal">—</div><div class="gauge-unit">DEG</div></div>
         </div>
         <div class="gauge-info">
           <div class="gauge-name" id="gaugeName">Select Assessment</div>
@@ -474,43 +305,44 @@ canvas#cam { width: 100%; height: 100%; object-fit: cover; display: block; }
         </div>
       </div>
     </div>
-
-    <!-- Compensation analysis -->
     <div class="r-section">
       <div class="r-label">Compensation Flags</div>
-      <div class="flag-list" id="flagList">
-        <div class="flag-item ok"><div class="flag-dot"></div>Awaiting data...</div>
-      </div>
+      <div class="flag-list" id="flagList"><div class="flag-item ok"><div class="flag-dot"></div>Awaiting data...</div></div>
     </div>
-
-    <!-- Angle trace chart -->
     <div class="r-section">
       <div class="r-label">Angle Trace (Current Trial)</div>
-      <div class="chart-wrap">
-        <canvas id="traceChart"></canvas>
-      </div>
+      <div class="chart-wrap"><canvas id="traceChart"></canvas></div>
     </div>
-
-    <!-- Trial results -->
     <div class="r-section" style="flex:1;">
       <div class="r-label">Trial Results</div>
       <table class="trial-table">
-        <thead>
-          <tr>
-            <th>Trial</th>
-            <th>Assessment</th>
-            <th>Peak ROM</th>
-            <th>Compensation</th>
-            <th>Grade</th>
-          </tr>
-        </thead>
-        <tbody id="trialBody">
-          <tr><td colspan="5" style="color:var(--muted);font-size:0.7rem;padding:12px 8px;">No trials recorded yet.</td></tr>
-        </tbody>
+        <thead><tr><th>Trial</th><th>Assessment</th><th>Peak ROM</th><th>Comp.</th><th>Grade</th></tr></thead>
+        <tbody id="trialBody"><tr><td colspan="5" style="color:var(--muted);font-size:.7rem;padding:12px 8px;">No trials recorded yet.</td></tr></tbody>
       </table>
     </div>
-
   </div>
+
+</div><!-- /main-grid -->
+</div><!-- /layout-shell -->
+
+<!-- MOBILE BOTTOM NAV -->
+<nav class="mobile-nav">
+  <div class="mobile-nav-tabs">
+    <button class="mnav-tab" onclick="openDrawer('setup')"><span class="ti">⚙️</span>Setup</button>
+    <button class="mnav-tab" onclick="openDrawer('metrics')"><span class="ti">📊</span>Metrics</button>
+    <button class="mnav-tab" onclick="openDrawer('flags')"><span class="ti">🚩</span>Flags</button>
+    <button class="mnav-tab" onclick="openDrawer('trials')"><span class="ti">📋</span>Trials</button>
+  </div>
+</nav>
+
+<!-- DRAWER OVERLAY -->
+<div class="drawer-overlay" id="dOverlay" onclick="closeDrawer()"></div>
+
+<!-- MOBILE DRAWER -->
+<div class="mobile-drawer" id="mDrawer">
+  <div class="drawer-handle"></div>
+  <button class="drawer-close" onclick="closeDrawer()">✕</button>
+  <div class="drawer-body" id="drawerBody"></div>
 </div>
 
 <!-- REPORT MODAL -->
@@ -519,705 +351,295 @@ canvas#cam { width: 100%; height: 100%; object-fit: cover; display: block; }
     <div class="modal-header">
       <div>
         <div class="modal-title">Clinical Assessment Report</div>
-        <div style="font-family:var(--mono);font-size:0.65rem;color:var(--muted);margin-top:4px;" id="reportMeta"></div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:.65rem;color:var(--muted);margin-top:4px;" id="reportMeta"></div>
       </div>
       <button class="modal-close" onclick="closeReport()">✕</button>
     </div>
     <div id="reportContent"></div>
     <div class="export-row">
       <button class="export-btn primary" onclick="exportCSV()">⬇ Export CSV</button>
-      <button class="export-btn secondary" onclick="window.print()">🖨 Print Report</button>
+      <button class="export-btn secondary" onclick="window.print()">🖨 Print</button>
       <button class="export-btn secondary" onclick="closeReport()">Close</button>
     </div>
   </div>
 </div>
 
 <script>
-// ══════════════════════════════════════════════════════════════════════════════
-// CONFIG
-// ══════════════════════════════════════════════════════════════════════════════
-const ASSESSMENTS = [
-  {
-    id: 'shoulder_flexion',
-    name: 'Shoulder Flexion',
-    normalMax: 180,
-    goodThreshold: 150,
-    fairThreshold: 100,
-    targetPositions: [
-      {label:'30°',  x:0.50, y:0.55},
-      {label:'60°',  x:0.50, y:0.42},
-      {label:'90°',  x:0.50, y:0.30},
-      {label:'120°', x:0.50, y:0.20},
-      {label:'150°', x:0.50, y:0.12},
-      {label:'180°', x:0.50, y:0.06},
-    ],
-    description: 'Forward elevation of the arm in the sagittal plane.',
-  },
-  {
-    id: 'shoulder_abduction',
-    name: 'Shoulder Abduction',
-    normalMax: 180,
-    goodThreshold: 150,
-    fairThreshold: 90,
-    targetPositions: [
-      {label:'30°',  x:0.78, y:0.58},
-      {label:'60°',  x:0.86, y:0.45},
-      {label:'90°',  x:0.90, y:0.30},
-      {label:'120°', x:0.88, y:0.18},
-      {label:'150°', x:0.80, y:0.10},
-      {label:'180°', x:0.65, y:0.07},
-    ],
-    description: 'Lateral elevation of the arm in the frontal plane.',
-  },
-  {
-    id: 'elbow_flexion',
-    name: 'Elbow Flexion',
-    normalMax: 145,
-    goodThreshold: 130,
-    fairThreshold: 90,
-    targetPositions: [
-      {label:'30°',  x:0.70, y:0.60},
-      {label:'60°',  x:0.72, y:0.48},
-      {label:'90°',  x:0.68, y:0.38},
-      {label:'120°', x:0.60, y:0.30},
-      {label:'145°', x:0.52, y:0.25},
-    ],
-    description: 'Flexion of the elbow joint from full extension.',
-  },
+// ══ MOBILE DRAWER SYSTEM ══
+function openDrawer(tab){
+  const drawer=document.getElementById('mDrawer');
+  const overlay=document.getElementById('dOverlay');
+  const body=document.getElementById('drawerBody');
+  document.querySelectorAll('.mnav-tab').forEach((t,i)=>t.classList.toggle('active',['setup','metrics','flags','trials'][i]===tab));
+
+  if(tab==='setup'){
+    body.innerHTML=`
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:.62rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:2px;padding:6px 0 10px;border-bottom:1px solid var(--border);margin-bottom:12px;">Assessments</div>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px;">
+        ${[0,1,2].map(i=>`<div class="assess-card ${state.sel===i?'active':''} ${document.getElementById('card-'+i).classList.contains('done')?'done':''}" onclick="selectAssessment(${i});openDrawer('setup')">
+          <div class="assess-badge">${document.getElementById('badge-'+i).textContent}</div>
+          <div class="assess-name">${['Shoulder Flexion','Shoulder Abduction','Elbow Flexion'][i]}</div>
+          <div class="assess-meta">${['0°→180° · Forward & upward','0°→180° · Sideways & upward','0°→145° · Bend elbow'][i]}</div>
+        </div>`).join('')}
+      </div>
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:.62rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:2px;padding:8px 0 10px;border-top:1px solid var(--border);">Side</div>
+      <div style="display:flex;gap:8px;margin-bottom:14px;">
+        <button class="side-btn ${state.side==='LEFT'?'active':''}" onclick="selectSide('LEFT');openDrawer('setup')">Left</button>
+        <button class="side-btn ${state.side==='RIGHT'?'active':''}" onclick="selectSide('RIGHT');openDrawer('setup')">Right</button>
+      </div>
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:.7rem;color:var(--text);margin-bottom:10px;">Trial: <span style="font-weight:600;color:var(--accent)">${Math.min(state.trialNum,3)}</span> / 3</div>`;
+  }
+  else if(tab==='metrics'){
+    const a=ASSESSMENTS[state.sel];
+    const pct=Math.min(100,(state.peakAngle/a.normalMax)*100);
+    body.innerHTML=`
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:.62rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:2px;padding:6px 0 12px;border-bottom:1px solid var(--border);margin-bottom:14px;">Live ROM — ${a.name}</div>
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px;">
+        <div style="position:relative;width:80px;height:80px;flex-shrink:0;">
+          <svg viewBox="0 0 70 70" width="80" height="80" style="transform:rotate(-90deg)">
+            <circle cx="35" cy="35" r="32" fill="none" stroke="var(--bg3)" stroke-width="7"/>
+            <circle cx="35" cy="35" r="32" fill="none" stroke="var(--accent)" stroke-width="7" stroke-linecap="round" stroke-dasharray="201" stroke-dashoffset="${201-(pct/100)*201}"/>
+          </svg>
+          <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:1.1rem;font-weight:600">${state.peakAngle||'—'}</span>
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:.55rem;color:var(--muted)">PEAK°</span>
+          </div>
+        </div>
+        <div>
+          <div style="font-weight:600;margin-bottom:4px">${a.name}</div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:.62rem;color:var(--muted);margin-bottom:6px">Normal 0°–${a.normalMax}°</div>
+          <div style="height:4px;background:var(--bg3);border-radius:2px;width:140px;overflow:hidden;"><div style="height:100%;width:${pct}%;background:var(--accent);border-radius:2px;"></div></div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;">
+        <div style="background:var(--bg3);border-radius:8px;padding:10px;"><div style="font-family:'IBM Plex Mono',monospace;font-size:.58rem;color:var(--muted);margin-bottom:3px">CURRENT</div><div style="font-family:'IBM Plex Mono',monospace;font-size:1.3rem;font-weight:600">${state.currentAngle||'—'}°</div></div>
+        <div style="background:var(--bg3);border-radius:8px;padding:10px;"><div style="font-family:'IBM Plex Mono',monospace;font-size:.58rem;color:var(--muted);margin-bottom:3px">TORSO LEAN</div><div style="font-family:'IBM Plex Mono',monospace;font-size:1.3rem;font-weight:600;color:${Math.round(state.torsoLean||0)>15?'var(--danger)':Math.round(state.torsoLean||0)>8?'var(--warn)':'var(--text)'}">${Math.round(state.torsoLean||0)}°</div></div>
+      </div>
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:.6rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:2px;margin-bottom:6px;">Angle Trace</div>
+      <div style="height:100px;position:relative;"><canvas id="traceM"></canvas></div>`;
+    setTimeout(()=>{
+      const el=document.getElementById('traceM');
+      if(el&&state.angleTrace.length>0)new Chart(el.getContext('2d'),{type:'line',data:{labels:state.angleTrace.map((_,i)=>i),datasets:[{data:state.angleTrace,borderColor:'#1a56db',backgroundColor:'rgba(26,86,219,.08)',borderWidth:2,pointRadius:0,tension:.4,fill:true}]},options:{responsive:true,maintainAspectRatio:false,animation:false,plugins:{legend:{display:false}},scales:{x:{display:false},y:{min:0,max:180,ticks:{font:{size:9},color:'#6b7a8d'},grid:{color:'#e8eaed'}}}}});
+    },50);
+  }
+  else if(tab==='flags'){
+    body.innerHTML=`
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:.62rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:2px;padding:6px 0 12px;border-bottom:1px solid var(--border);margin-bottom:12px;">Compensation Flags</div>
+      ${document.getElementById('flagList').innerHTML}`;
+  }
+  else if(tab==='trials'){
+    body.innerHTML=`
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:.62rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:2px;padding:6px 0 12px;border-bottom:1px solid var(--border);margin-bottom:12px;">Trial Results</div>
+      <table class="trial-table" style="margin-bottom:16px;">
+        <thead><tr><th>Trial</th><th>Assessment</th><th>Peak</th><th>Comp.</th><th>Grade</th></tr></thead>
+        <tbody>${document.getElementById('trialBody').innerHTML}</tbody>
+      </table>
+      <button class="report-btn" onclick="showReport();closeDrawer()">📋 Generate Report</button>`;
+  }
+
+  drawer.classList.add('open');
+  overlay.classList.add('open');
+}
+
+function closeDrawer(){
+  document.getElementById('mDrawer').classList.remove('open');
+  document.getElementById('dOverlay').classList.remove('open');
+  document.querySelectorAll('.mnav-tab').forEach(t=>t.classList.remove('active'));
+}
+
+function syncFabs(){
+  if(window.innerWidth>=768)return;
+  document.getElementById('fabBegin').style.display=state.isRecording?'none':'inline-block';
+  document.getElementById('fabStop').style.display=state.isRecording?'inline-block':'none';
+}
+
+// ══ ALL ORIGINAL JS — UNCHANGED ══
+const ASSESSMENTS=[
+  {id:'shoulder_flexion',name:'Shoulder Flexion',normalMax:180,goodThreshold:150,fairThreshold:100,
+   targetPositions:[{label:'30°',x:.50,y:.55},{label:'60°',x:.50,y:.42},{label:'90°',x:.50,y:.30},{label:'120°',x:.50,y:.20},{label:'150°',x:.50,y:.12},{label:'180°',x:.50,y:.06}]},
+  {id:'shoulder_abduction',name:'Shoulder Abduction',normalMax:180,goodThreshold:150,fairThreshold:90,
+   targetPositions:[{label:'30°',x:.78,y:.58},{label:'60°',x:.86,y:.45},{label:'90°',x:.90,y:.30},{label:'120°',x:.88,y:.18},{label:'150°',x:.80,y:.10},{label:'180°',x:.65,y:.07}]},
+  {id:'elbow_flexion',name:'Elbow Flexion',normalMax:145,goodThreshold:130,fairThreshold:90,
+   targetPositions:[{label:'30°',x:.70,y:.60},{label:'60°',x:.72,y:.48},{label:'90°',x:.68,y:.38},{label:'120°',x:.60,y:.30},{label:'145°',x:.52,y:.25}]},
 ];
 
-// ══════════════════════════════════════════════════════════════════════════════
-// STATE
-// ══════════════════════════════════════════════════════════════════════════════
-let state = {
-  selectedAssessment: 0,
-  side: 'LEFT',
-  isRecording: false,
-  currentAngle: 0,
-  peakAngle: 0,
-  trialNum: 1,
-  trialData: [],       // all recorded trials
-  angleTrace: [],      // current trial trace
-  lastLandmarks: null,
-  frameCount: 0,
-  // Compensation data
-  torsoLean: 0,
-  shoulderElevation: 0,
-  trunkRotation: 0,
-  peakTorsoLean: 0,
-  peakShoulderElev: 0,
-};
+let state={sel:0,side:'LEFT',isRecording:false,currentAngle:0,peakAngle:0,trialNum:1,trialData:[],angleTrace:[],lastLandmarks:null,frameCount:0,torsoLean:0,shoulderElev:0,peakTorsoLean:0,peakShoulderElev:0};
 
-// ══════════════════════════════════════════════════════════════════════════════
-// MEDIAPIPE LANDMARK INDEX
-// ══════════════════════════════════════════════════════════════════════════════
-const LM = {
-  NOSE:0,
-  LEFT_SHOULDER:11, RIGHT_SHOULDER:12,
-  LEFT_ELBOW:13,    RIGHT_ELBOW:14,
-  LEFT_WRIST:15,    RIGHT_WRIST:16,
-  LEFT_HIP:23,      RIGHT_HIP:24,
-  LEFT_KNEE:25,     RIGHT_KNEE:26,
-  LEFT_INDEX:19,    RIGHT_INDEX:20,
-};
+const LM={NOSE:0,LEFT_SHOULDER:11,RIGHT_SHOULDER:12,LEFT_ELBOW:13,RIGHT_ELBOW:14,LEFT_WRIST:15,RIGHT_WRIST:16,LEFT_HIP:23,RIGHT_HIP:24,LEFT_KNEE:25,RIGHT_KNEE:26,LEFT_INDEX:19,RIGHT_INDEX:20};
+function getLM(lms,name){return lms[LM[name]]||{x:0,y:0,z:0,visibility:0};}
+function getPx(lms,name,w,h){const p=getLM(lms,name);return[p.x*w,p.y*h];}
+function angleBetween(a,b,c){const ba=[a[0]-b[0],a[1]-b[1]],bc=[c[0]-b[0],c[1]-b[1]];const dot=ba[0]*bc[0]+ba[1]*bc[1];const n1=Math.hypot(...ba),n2=Math.hypot(...bc);if(!n1||!n2)return 0;return Math.round(Math.acos(Math.max(-1,Math.min(1,dot/(n1*n2))))*180/Math.PI*10)/10;}
+function angleFromVertical(top,bot){const dx=bot[0]-top[0],dy=bot[1]-top[1];return Math.round(Math.atan2(dx,dy)*180/Math.PI*10)/10;}
+function dist(a,b){return Math.hypot(a[0]-b[0],a[1]-b[1]);}
 
-function getLM(lms, name) {
-  return lms[LM[name]] || {x:0,y:0,z:0,visibility:0};
+function computeAngles(lms,w,h){
+  const side=state.side,opp=side==='LEFT'?'RIGHT':'LEFT';
+  const shoulder=getPx(lms,`${side}_SHOULDER`,w,h),elbow=getPx(lms,`${side}_ELBOW`,w,h),wrist=getPx(lms,`${side}_WRIST`,w,h),hip=getPx(lms,`${side}_HIP`,w,h),oHip=getPx(lms,`${opp}_HIP`,w,h),oShoulder=getPx(lms,`${opp}_SHOULDER`,w,h);
+  const shoulderMid=[(shoulder[0]+oShoulder[0])/2,(shoulder[1]+oShoulder[1])/2];
+  const hipMid=[(hip[0]+oHip[0])/2,(hip[1]+oHip[1])/2];
+  const torsoLean=Math.abs(angleFromVertical(shoulderMid,hipMid));
+  const shoulderElev=Math.round((Math.abs(shoulder[1]-getPx(lms,`${opp}_SHOULDER`,w,h)[1])/dist(shoulderMid,hipMid))*100);
+  const a=ASSESSMENTS[state.sel];
+  let primaryAngle=0;
+  if(a.id==='shoulder_flexion'||a.id==='shoulder_abduction'){primaryAngle=angleBetween(hip,shoulder,elbow);primaryAngle=Math.max(0,180-primaryAngle);}
+  else if(a.id==='elbow_flexion'){primaryAngle=angleBetween(shoulder,elbow,wrist);primaryAngle=Math.max(0,180-primaryAngle);}
+  return{primaryAngle:Math.round(primaryAngle),torsoLean,shoulderElev,shoulder,elbow,wrist,hip,oHip,oShoulder,shoulderMid,hipMid};
 }
-function getPx(lms, name, w, h) {
-  const p = getLM(lms, name);
-  return [p.x*w, p.y*h];
-}
-function angleBetween(a,b,c) {
-  const ba=[a[0]-b[0],a[1]-b[1]], bc=[c[0]-b[0],c[1]-b[1]];
-  const dot=ba[0]*bc[0]+ba[1]*bc[1];
-  const n1=Math.hypot(...ba), n2=Math.hypot(...bc);
-  if(!n1||!n2) return 0;
-  return Math.round(Math.acos(Math.max(-1,Math.min(1,dot/(n1*n2))))*180/Math.PI*10)/10;
-}
-function angleFromVertical(top, bot) {
-  const dx=bot[0]-top[0], dy=bot[1]-top[1];
-  return Math.round(Math.atan2(dx,dy)*180/Math.PI*10)/10;
-}
-function dist(a,b){ return Math.hypot(a[0]-b[0],a[1]-b[1]); }
 
-// ══════════════════════════════════════════════════════════════════════════════
-// ANGLE COMPUTATION PER ASSESSMENT
-// ══════════════════════════════════════════════════════════════════════════════
-function computeAngles(lms, w, h) {
-  const side = state.side;
-  const opp  = side==='LEFT'?'RIGHT':'LEFT';
-
-  const shoulder = getPx(lms, `${side}_SHOULDER`, w, h);
-  const elbow    = getPx(lms, `${side}_ELBOW`,    w, h);
-  const wrist    = getPx(lms, `${side}_WRIST`,    w, h);
-  const hip      = getPx(lms, `${side}_HIP`,      w, h);
-  const oHip     = getPx(lms, `${opp}_HIP`,       w, h);
-  const oShoulder= getPx(lms, `${opp}_SHOULDER`,  w, h);
-
-  // Torso midpoints
-  const shoulderMid = [(shoulder[0]+oShoulder[0])/2, (shoulder[1]+oShoulder[1])/2];
-  const hipMid      = [(hip[0]+oHip[0])/2,           (hip[1]+oHip[1])/2];
-
-  // Torso lean (lateral) from vertical
-  const torsoLean = Math.abs(angleFromVertical(shoulderMid, hipMid));
-
-  // Shoulder elevation (opposite shoulder rising)
-  const oSh   = getPx(lms, `${opp}_SHOULDER`, w, h);
-  const shoulderDiff = Math.abs(shoulder[1] - oSh[1]);
-  const bodyHeight   = dist(shoulderMid, hipMid);
-  const shoulderElev = Math.round((shoulderDiff/bodyHeight)*100);
-
-  // Trunk rotation (shoulder width vs expected)
-  const shoulderWidth = dist(shoulder, oShoulder);
-
-  let primaryAngle = 0;
-  const a = ASSESSMENTS[state.selectedAssessment];
-
-  if (a.id === 'shoulder_flexion') {
-    // Angle of upper arm from torso (hip→shoulder→elbow)
-    primaryAngle = angleBetween(hip, shoulder, elbow);
-    // Convert: straight down = 0°, forward/up = 180°
-    primaryAngle = Math.max(0, 180 - primaryAngle);
+const SPAIRS=[['LEFT_SHOULDER','RIGHT_SHOULDER'],['LEFT_SHOULDER','LEFT_ELBOW'],['LEFT_ELBOW','LEFT_WRIST'],['RIGHT_SHOULDER','RIGHT_ELBOW'],['RIGHT_ELBOW','RIGHT_WRIST'],['LEFT_SHOULDER','LEFT_HIP'],['RIGHT_SHOULDER','RIGHT_HIP'],['LEFT_HIP','RIGHT_HIP'],['LEFT_HIP','LEFT_KNEE'],['RIGHT_HIP','RIGHT_KNEE']];
+function drawFrame(lms,w,h,_,ctx){
+  const side=state.side;
+  ctx.save();
+  for(const[a,b]of SPAIRS){const pa=lms[LM[a]],pb=lms[LM[b]];if(!pa||!pb||pa.visibility<.35||pb.visibility<.35)continue;ctx.strokeStyle='rgba(255,255,255,.2)';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(pa.x*w,pa.y*h);ctx.lineTo(pb.x*w,pb.y*h);ctx.stroke();}
+  const sh=lms[LM[`${side}_SHOULDER`]],el=lms[LM[`${side}_ELBOW`]],wr=lms[LM[`${side}_WRIST`]],hi=lms[LM[`${side}_HIP`]];
+  if(sh&&el&&wr&&hi){
+    ctx.strokeStyle=state.isRecording?'#60a5fa':'#94a3b8';ctx.lineWidth=4;ctx.lineCap='round';
+    ctx.beginPath();ctx.moveTo(sh.x*w,sh.y*h);ctx.lineTo(el.x*w,el.y*h);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(el.x*w,el.y*h);ctx.lineTo(wr.x*w,wr.y*h);ctx.stroke();
+    for(const pt of[sh,el,wr]){ctx.beginPath();ctx.arc(pt.x*w,pt.y*h,7,0,Math.PI*2);ctx.fillStyle=state.isRecording?'#3b82f6':'#64748b';ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.stroke();}
+    if(state.isRecording){const sx=sh.x*w,sy=sh.y*h;ctx.strokeStyle='rgba(59,130,246,.5)';ctx.lineWidth=2;ctx.setLineDash([4,4]);ctx.beginPath();ctx.arc(sx,sy,45,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle='#fff';ctx.font='bold 14px IBM Plex Mono,monospace';ctx.fillText(`${state.currentAngle}°`,sx+50,sy-10);}
+    const oside=side==='LEFT'?'RIGHT':'LEFT';
+    const hx=(hi.x*w+lms[LM[`${oside}_HIP`]].x*w)/2,hy=(hi.y*h+lms[LM[`${oside}_HIP`]].y*h)/2;
+    const shx=(sh.x*w+lms[LM[`${oside}_SHOULDER`]].x*w)/2,shy=(sh.y*h+lms[LM[`${oside}_SHOULDER`]].y*h)/2;
+    ctx.strokeStyle=state.torsoLean>10?'rgba(251,191,36,.6)':'rgba(255,255,255,.15)';ctx.lineWidth=2;ctx.setLineDash([6,4]);ctx.beginPath();ctx.moveTo(shx,shy);ctx.lineTo(hx,hy);ctx.stroke();ctx.setLineDash([]);
   }
-  else if (a.id === 'shoulder_abduction') {
-    // Hip → shoulder → elbow, lateral plane
-    primaryAngle = angleBetween(hip, shoulder, elbow);
-    primaryAngle = Math.max(0, 180 - primaryAngle);
-  }
-  else if (a.id === 'elbow_flexion') {
-    // Shoulder → elbow → wrist
-    primaryAngle = angleBetween(shoulder, elbow, wrist);
-    primaryAngle = Math.max(0, 180 - primaryAngle);
-  }
-
-  return {
-    primaryAngle: Math.round(primaryAngle),
-    torsoLean,
-    shoulderElev,
-    shoulder, elbow, wrist, hip, oHip, oShoulder,
-    shoulderMid, hipMid,
-  };
+  drawTargets(ctx,w,h);ctx.restore();
 }
-
-// ══════════════════════════════════════════════════════════════════════════════
-// CANVAS DRAWING
-// ══════════════════════════════════════════════════════════════════════════════
-const SKELETON_PAIRS = [
-  ['LEFT_SHOULDER','RIGHT_SHOULDER'],
-  ['LEFT_SHOULDER','LEFT_ELBOW'],['LEFT_ELBOW','LEFT_WRIST'],
-  ['RIGHT_SHOULDER','RIGHT_ELBOW'],['RIGHT_ELBOW','RIGHT_WRIST'],
-  ['LEFT_SHOULDER','LEFT_HIP'],['RIGHT_SHOULDER','RIGHT_HIP'],
-  ['LEFT_HIP','RIGHT_HIP'],
-  ['LEFT_HIP','LEFT_KNEE'],['RIGHT_HIP','RIGHT_KNEE'],
-];
-
-function drawFrame(lms, w, h, ctx, camCtx) {
-  const side = state.side;
-
-  // Draw skeleton
-  camCtx.save();
-  for (const [a,b] of SKELETON_PAIRS) {
-    const pa = lms[LM[a]], pb = lms[LM[b]];
-    if (!pa||!pb||pa.visibility<0.35||pb.visibility<0.35) continue;
-    camCtx.strokeStyle = 'rgba(255,255,255,0.2)';
-    camCtx.lineWidth = 1.5;
-    camCtx.beginPath();
-    camCtx.moveTo(pa.x*w, pa.y*h);
-    camCtx.lineTo(pb.x*w, pb.y*h);
-    camCtx.stroke();
-  }
-
-  // Highlight assessed limb
-  const shoulder = lms[LM[`${side}_SHOULDER`]];
-  const elbow    = lms[LM[`${side}_ELBOW`]];
-  const wrist    = lms[LM[`${side}_WRIST`]];
-  const hip      = lms[LM[`${side}_HIP`]];
-
-  if (shoulder&&elbow&&wrist&&hip) {
-    // Arm highlight
-    camCtx.strokeStyle = state.isRecording ? '#60a5fa' : '#94a3b8';
-    camCtx.lineWidth = 4;
-    camCtx.lineCap = 'round';
-
-    // Upper arm
-    camCtx.beginPath();
-    camCtx.moveTo(shoulder.x*w, shoulder.y*h);
-    camCtx.lineTo(elbow.x*w, elbow.y*h);
-    camCtx.stroke();
-
-    // Forearm
-    camCtx.beginPath();
-    camCtx.moveTo(elbow.x*w, elbow.y*h);
-    camCtx.lineTo(wrist.x*w, wrist.y*h);
-    camCtx.stroke();
-
-    // Joints
-    for (const pt of [shoulder,elbow,wrist]) {
-      camCtx.beginPath();
-      camCtx.arc(pt.x*w, pt.y*h, 7, 0, Math.PI*2);
-      camCtx.fillStyle = state.isRecording ? '#3b82f6' : '#64748b';
-      camCtx.fill();
-      camCtx.strokeStyle = '#fff';
-      camCtx.lineWidth = 2;
-      camCtx.stroke();
-    }
-
-    // Draw angle arc at shoulder
-    if (state.isRecording) {
-      const sx = shoulder.x*w, sy = shoulder.y*h;
-      camCtx.strokeStyle = 'rgba(59,130,246,0.5)';
-      camCtx.lineWidth = 2;
-      camCtx.setLineDash([4,4]);
-      camCtx.beginPath();
-      camCtx.arc(sx, sy, 45, 0, Math.PI*2);
-      camCtx.stroke();
-      camCtx.setLineDash([]);
-
-      // Angle label
-      camCtx.fillStyle = '#fff';
-      camCtx.font = 'bold 14px IBM Plex Mono, monospace';
-      camCtx.fillText(`${state.currentAngle}°`, sx+50, sy-10);
-    }
-
-    // Torso line
-    const hx = (hip.x*w + lms[LM[`${side==='LEFT'?'RIGHT':'LEFT'}_HIP`]].x*w)/2;
-    const hy = (hip.y*h + lms[LM[`${side==='LEFT'?'RIGHT':'LEFT'}_HIP`]].y*h)/2;
-    const shx= (shoulder.x*w + lms[LM[`${side==='LEFT'?'RIGHT':'LEFT'}_SHOULDER`]].x*w)/2;
-    const shy= (shoulder.y*h + lms[LM[`${side==='LEFT'?'RIGHT':'LEFT'}_SHOULDER`]].y*h)/2;
-    camCtx.strokeStyle = state.torsoLean>10?'rgba(251,191,36,0.6)':'rgba(255,255,255,0.15)';
-    camCtx.lineWidth = 2;
-    camCtx.setLineDash([6,4]);
-    camCtx.beginPath();
-    camCtx.moveTo(shx, shy);
-    camCtx.lineTo(hx, hy);
-    camCtx.stroke();
-    camCtx.setLineDash([]);
-  }
-
-  // Draw targets
-  drawTargets(camCtx, w, h);
-
-  camCtx.restore();
-}
-
-function drawTargets(ctx, w, h) {
-  if (!state.isRecording) return;
-  const a = ASSESSMENTS[state.selectedAssessment];
-  const side = state.side;
-  const mirror = side === 'RIGHT';
-
-  a.targetPositions.forEach((t, i) => {
-    let tx = t.x * w;
-    if (mirror && a.id === 'shoulder_abduction') tx = (1-t.x) * w;
-    const ty = t.y * h;
-
-    // Glow
-    const grd = ctx.createRadialGradient(tx,ty,0, tx,ty,22);
-    grd.addColorStop(0,'rgba(99,179,255,0.35)');
-    grd.addColorStop(1,'rgba(99,179,255,0)');
-    ctx.beginPath(); ctx.arc(tx,ty,22,0,Math.PI*2);
-    ctx.fillStyle=grd; ctx.fill();
-
-    // Circle
-    ctx.beginPath(); ctx.arc(tx,ty,10,0,Math.PI*2);
-    ctx.strokeStyle='rgba(147,197,253,0.8)'; ctx.lineWidth=2; ctx.stroke();
-    ctx.fillStyle='rgba(59,130,246,0.3)'; ctx.fill();
-
-    // Label
-    ctx.fillStyle='rgba(255,255,255,0.85)';
-    ctx.font='bold 10px IBM Plex Mono, monospace';
-    ctx.textAlign='center';
-    ctx.fillText(t.label, tx, ty-16);
-    ctx.textAlign='left';
+function drawTargets(ctx,w,h){
+  if(!state.isRecording)return;
+  const a=ASSESSMENTS[state.sel];const mirror=state.side==='RIGHT';
+  a.targetPositions.forEach(t=>{
+    let tx=t.x*w;if(mirror&&a.id==='shoulder_abduction')tx=(1-t.x)*w;const ty=t.y*h;
+    const grd=ctx.createRadialGradient(tx,ty,0,tx,ty,22);grd.addColorStop(0,'rgba(99,179,255,.35)');grd.addColorStop(1,'rgba(99,179,255,0)');
+    ctx.beginPath();ctx.arc(tx,ty,22,0,Math.PI*2);ctx.fillStyle=grd;ctx.fill();
+    ctx.beginPath();ctx.arc(tx,ty,10,0,Math.PI*2);ctx.strokeStyle='rgba(147,197,253,.8)';ctx.lineWidth=2;ctx.stroke();ctx.fillStyle='rgba(59,130,246,.3)';ctx.fill();
+    ctx.fillStyle='rgba(255,255,255,.85)';ctx.font='bold 10px IBM Plex Mono,monospace';ctx.textAlign='center';ctx.fillText(t.label,tx,ty-16);ctx.textAlign='left';
   });
 }
 
-// ══════════════════════════════════════════════════════════════════════════════
-// UI UPDATES
-// ══════════════════════════════════════════════════════════════════════════════
-function updateMetricsBar(data) {
-  const a = ASSESSMENTS[state.selectedAssessment];
-  const ang = data.primaryAngle;
-  const torso = Math.round(data.torsoLean);
-  const comp = data.shoulderElev;
-
-  document.getElementById('m-angle').textContent = `${ang}°`;
-  document.getElementById('m-peak').textContent  = `${state.peakAngle}°`;
-  document.getElementById('m-torso').textContent = `${torso}°`;
-
-  const compEl = document.getElementById('m-comp');
-  if (comp > 20 || torso > 15) {
-    compEl.textContent = 'DETECTED';
-    compEl.className = 'metric-chip-val bad';
-  } else if (comp > 10 || torso > 8) {
-    compEl.textContent = 'MILD';
-    compEl.className = 'metric-chip-val warn';
-  } else {
-    compEl.textContent = 'NONE';
-    compEl.className = 'metric-chip-val good';
-  }
-
-  // Torso color
-  const torsoEl = document.getElementById('m-torso');
-  torsoEl.className = torso>15?'metric-chip-val bad':torso>8?'metric-chip-val warn':'metric-chip-val good';
-
-  // Gauge
-  const pct = Math.min(100, (ang/a.normalMax)*100);
-  const circ = document.getElementById('gaugeFg');
-  circ.style.strokeDashoffset = 201 - (pct/100)*201;
-  circ.style.stroke = ang>=a.goodThreshold?'#10b981':ang>=a.fairThreshold?'#f59e0b':'#ef4444';
-  document.getElementById('gaugeVal').textContent = ang;
-  document.getElementById('gaugeBarFill').style.width = pct+'%';
-
-  // Compensation flags
-  const flags = [
-    {
-      label: `Torso lateral lean: ${torso}°`,
-      state: torso<=6?'ok':torso<=15?'warn':'bad',
-      note: torso<=6?'Normal':'Compensating — trunk laterally flexing',
-    },
-    {
-      label: `Opposite shoulder rise: ${data.shoulderElev}%`,
-      state: data.shoulderElev<=8?'ok':data.shoulderElev<=20?'warn':'bad',
-      note: data.shoulderElev<=8?'Normal':'Shoulder girdle elevation detected',
-    },
-    {
-      label: `Active ROM achieved: ${ang}°`,
-      state: ang>=a.goodThreshold?'ok':ang>=a.fairThreshold?'warn':'bad',
-      note: ang>=a.goodThreshold?'Within normal limits':ang>=a.fairThreshold?'Mildly restricted':'Significantly restricted',
-    },
-    {
-      label: `Peak ROM this trial: ${state.peakAngle}°`,
-      state: state.peakAngle>=a.goodThreshold?'ok':state.peakAngle>=a.fairThreshold?'warn':'bad',
-      note: state.peakAngle>=a.goodThreshold?'Functional range':'Limited — see report',
-    },
+function updateMetricsBar(data){
+  const a=ASSESSMENTS[state.sel],ang=data.primaryAngle,torso=Math.round(data.torsoLean),comp=data.shoulderElev;
+  document.getElementById('m-angle').textContent=`${ang}°`;
+  document.getElementById('m-peak').textContent=`${state.peakAngle}°`;
+  const te=document.getElementById('m-torso');te.textContent=`${torso}°`;te.className='metric-chip-val '+(torso>15?'bad':torso>8?'warn':'good');
+  const ce=document.getElementById('m-comp');
+  if(comp>20||torso>15){ce.textContent='HIGH';ce.className='metric-chip-val bad';}
+  else if(comp>10||torso>8){ce.textContent='MILD';ce.className='metric-chip-val warn';}
+  else{ce.textContent='NONE';ce.className='metric-chip-val good';}
+  const pct=Math.min(100,(ang/a.normalMax)*100);
+  const c=document.getElementById('gaugeFg');c.style.strokeDashoffset=201-(pct/100)*201;c.style.stroke=ang>=a.goodThreshold?'#10b981':ang>=a.fairThreshold?'#f59e0b':'#ef4444';
+  document.getElementById('gaugeVal').textContent=ang;document.getElementById('gaugeBarFill').style.width=pct+'%';
+  const flags=[
+    {label:`Torso lean: ${torso}°`,s:torso<=6?'ok':torso<=15?'warn':'bad',note:torso<=6?'Normal':'Trunk laterally compensating'},
+    {label:`Shoulder elevation: ${comp}%`,s:comp<=8?'ok':comp<=20?'warn':'bad',note:comp<=8?'Normal':'Shoulder girdle elevation detected'},
+    {label:`Active ROM: ${ang}°`,s:ang>=a.goodThreshold?'ok':ang>=a.fairThreshold?'warn':'bad',note:ang>=a.goodThreshold?'Within normal limits':ang>=a.fairThreshold?'Mildly restricted':'Significantly restricted'},
+    {label:`Peak ROM: ${state.peakAngle}°`,s:state.peakAngle>=a.goodThreshold?'ok':state.peakAngle>=a.fairThreshold?'warn':'bad',note:state.peakAngle>=a.goodThreshold?'Functional range':'Limited — see report'},
   ];
-
-  const fl = document.getElementById('flagList');
-  fl.innerHTML = flags.map(f=>`
-    <div class="flag-item ${f.state}">
-      <div class="flag-dot"></div>
-      <div><strong>${f.label}</strong><br/><span style="font-size:0.7rem;opacity:0.8">${f.note}</span></div>
-    </div>`).join('');
+  document.getElementById('flagList').innerHTML=flags.map(f=>`<div class="flag-item ${f.s}"><div class="flag-dot"></div><div><strong>${f.label}</strong><br/><span style="font-size:.68rem;opacity:.8">${f.note}</span></div></div>`).join('');
 }
 
-// ══════════════════════════════════════════════════════════════════════════════
-// CHART
-// ══════════════════════════════════════════════════════════════════════════════
-let traceChart = null;
-function initChart() {
-  const ctx2 = document.getElementById('traceChart').getContext('2d');
-  traceChart = new Chart(ctx2, {
-    type: 'line',
-    data: {
-      labels: [],
-      datasets: [{
-        label: 'Angle (°)',
-        data: [],
-        borderColor: '#3b82f6',
-        backgroundColor: 'rgba(59,130,246,0.08)',
-        borderWidth: 2,
-        pointRadius: 0,
-        tension: 0.4,
-        fill: true,
-      }]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      animation: false,
-      plugins: { legend: { display: false } },
-      scales: {
-        x: { display: false },
-        y: {
-          min: 0, max: 180,
-          ticks: { font: { family: "'IBM Plex Mono'", size: 9 }, color: '#6b7a8d' },
-          grid: { color: '#e8eaed' },
-        }
-      }
-    }
-  });
+let traceChart=null;
+function initChart(){
+  traceChart=new Chart(document.getElementById('traceChart').getContext('2d'),{type:'line',data:{labels:[],datasets:[{data:[],borderColor:'#1a56db',backgroundColor:'rgba(26,86,219,.08)',borderWidth:2,pointRadius:0,tension:.4,fill:true}]},options:{responsive:true,maintainAspectRatio:false,animation:false,plugins:{legend:{display:false}},scales:{x:{display:false},y:{min:0,max:180,ticks:{font:{family:"'IBM Plex Mono'",size:9},color:'#6b7a8d'},grid:{color:'#e8eaed'}}}}});
+}
+function pushTrace(angle){
+  state.angleTrace.push(angle);if(state.angleTrace.length>150)state.angleTrace.shift();
+  traceChart.data.labels=state.angleTrace.map((_,i)=>i);traceChart.data.datasets[0].data=state.angleTrace;traceChart.update('none');
 }
 
-function pushTrace(angle) {
-  state.angleTrace.push(angle);
-  if (state.angleTrace.length > 150) state.angleTrace.shift();
-  traceChart.data.labels = state.angleTrace.map((_,i)=>i);
-  traceChart.data.datasets[0].data = state.angleTrace;
-  traceChart.update('none');
+function selectAssessment(idx){
+  state.sel=idx;
+  document.querySelectorAll('.assess-card').forEach((c,i)=>{if(!c.classList.contains('done')){c.className='assess-card'+(i===idx?' active':'');}else{c.className='assess-card done'+(i===idx?' active':'');}});
+  const a=ASSESSMENTS[idx];
+  document.getElementById('gaugeName').textContent=a.name;document.getElementById('gaugeRange').textContent=`Normal: 0°–${a.normalMax}°`;
+  document.getElementById('camTitle').textContent=`${a.name} Assessment`;document.getElementById('camSub').textContent=`${state.side} side · Press Begin`;
+  state.peakAngle=0;state.angleTrace=[];if(traceChart){traceChart.data.labels=[];traceChart.data.datasets[0].data=[];traceChart.update();}
 }
-
-// ══════════════════════════════════════════════════════════════════════════════
-// ASSESSMENT CONTROL
-// ══════════════════════════════════════════════════════════════════════════════
-function selectAssessment(idx) {
-  state.selectedAssessment = idx;
-  document.querySelectorAll('.assess-card').forEach((c,i)=>{
-    if (!c.classList.contains('done')) {
-      c.className = 'assess-card' + (i===idx?' active':'');
-    } else {
-      c.className = 'assess-card done' + (i===idx?' active':'');
-    }
-  });
-  const a = ASSESSMENTS[idx];
-  document.getElementById('gaugeName').textContent  = a.name;
-  document.getElementById('gaugeRange').textContent = `Normal: 0°–${a.normalMax}°`;
-  document.getElementById('camTitle').textContent   = `${a.name} Assessment`;
-  document.getElementById('camSub').textContent     = `${state.side} side · Press Begin to start`;
-  state.peakAngle = 0;
-  state.angleTrace = [];
-  if (traceChart) {
-    traceChart.data.labels = [];
-    traceChart.data.datasets[0].data = [];
-    traceChart.update();
-  }
+function selectSide(side){
+  state.side=side;
+  document.getElementById('sideL').className='side-btn'+(side==='LEFT'?' active':'');
+  document.getElementById('sideR').className='side-btn'+(side==='RIGHT'?' active':'');
+  document.getElementById('camSub').textContent=`${ASSESSMENTS[state.sel].name} · ${side} · Press Begin`;
 }
-
-function selectSide(side) {
-  state.side = side;
-  document.getElementById('sideL').className = 'side-btn'+(side==='LEFT'?' active':'');
-  document.getElementById('sideR').className = 'side-btn'+(side==='RIGHT'?' active':'');
-  document.getElementById('camSub').textContent =
-    `${ASSESSMENTS[state.selectedAssessment].name} · ${side} side · Press Begin`;
-}
-
-function startAssessment() {
-  state.isRecording = true;
-  state.peakAngle   = 0;
-  state.angleTrace  = [];
-  state.peakTorsoLean = 0;
-  state.peakShoulderElev = 0;
-  document.getElementById('startBtn').style.display = 'none';
-  document.getElementById('stopBtn').style.display  = 'block';
-  document.getElementById('recPill').style.display  = 'flex';
+function startAssessment(){
+  state.isRecording=true;state.peakAngle=0;state.angleTrace=[];state.peakTorsoLean=0;state.peakShoulderElev=0;
+  document.getElementById('startBtn').style.display='none';document.getElementById('stopBtn').style.display='block';document.getElementById('recPill').style.display='flex';
   document.getElementById('startPrompt').classList.add('hidden');
-  if (traceChart) {
-    traceChart.data.labels = [];
-    traceChart.data.datasets[0].data = [];
-    traceChart.update();
-  }
+  if(traceChart){traceChart.data.labels=[];traceChart.data.datasets[0].data=[];traceChart.update();}
+  syncFabs();
 }
-
-function stopAssessment() {
-  if (!state.isRecording) return;
-  state.isRecording = false;
-  document.getElementById('startBtn').style.display = 'block';
-  document.getElementById('stopBtn').style.display  = 'none';
-  document.getElementById('recPill').style.display  = 'none';
-
-  const a = ASSESSMENTS[state.selectedAssessment];
-  const peak = state.peakAngle;
-  const grade = peak>=a.goodThreshold?'A':peak>=a.fairThreshold?'B':peak>=a.fairThreshold*0.6?'C':'D';
-  const compScore = state.peakTorsoLean>15||state.peakShoulderElev>20?'Significant':
-                    state.peakTorsoLean>8||state.peakShoulderElev>10?'Mild':'None';
-
-  const trial = {
-    trialNum:    state.trialNum,
-    assessment:  a.name,
-    assessId:    a.id,
-    side:        state.side,
-    peakROM:     peak,
-    torsoLean:   Math.round(state.peakTorsoLean),
-    shoulderElev:Math.round(state.peakShoulderElev),
-    compensation:compScore,
-    grade,
-    trace:       [...state.angleTrace],
-    timestamp:   new Date().toISOString(),
-  };
-  state.trialData.push(trial);
-  state.trialNum++;
-  document.getElementById('trialNum').textContent = Math.min(state.trialNum, 3);
-
-  // Update trial table
+function stopAssessment(){
+  if(!state.isRecording)return;
+  state.isRecording=false;document.getElementById('startBtn').style.display='block';document.getElementById('stopBtn').style.display='none';document.getElementById('recPill').style.display='none';
+  const a=ASSESSMENTS[state.sel],peak=state.peakAngle;
+  const grade=peak>=a.goodThreshold?'A':peak>=a.fairThreshold?'B':peak>=a.fairThreshold*.6?'C':'D';
+  const comp=state.peakTorsoLean>15||state.peakShoulderElev>20?'Significant':state.peakTorsoLean>8||state.peakShoulderElev>10?'Mild':'None';
+  state.trialData.push({trialNum:state.trialNum,assessment:a.name,assessId:a.id,side:state.side,peakROM:peak,torsoLean:Math.round(state.peakTorsoLean),shoulderElev:Math.round(state.peakShoulderElev),compensation:comp,grade,trace:[...state.angleTrace],timestamp:new Date().toISOString()});
+  state.trialNum++;document.getElementById('trialNum').textContent=Math.min(state.trialNum,3);
   renderTrialTable();
-
-  // Mark assessment done if 3 trials
-  const trialsForThis = state.trialData.filter(t=>t.assessId===a.id&&t.side===state.side);
-  if (trialsForThis.length >= 3) {
-    const card = document.getElementById(`card-${state.selectedAssessment}`);
-    card.className = 'assess-card done active';
-    document.getElementById(`badge-${state.selectedAssessment}`).textContent = 'DONE';
-    state.trialNum = 1;
-    document.getElementById('trialNum').textContent = '1';
+  const done=state.trialData.filter(t=>t.assessId===a.id&&t.side===state.side);
+  if(done.length>=3){document.getElementById(`card-${state.sel}`).className='assess-card done active';document.getElementById(`badge-${state.sel}`).textContent='DONE';state.trialNum=1;document.getElementById('trialNum').textContent='1';}
+  syncFabs();
+}
+function renderTrialTable(){
+  const tb=document.getElementById('trialBody');
+  if(!state.trialData.length){tb.innerHTML='<tr><td colspan="5" style="color:var(--muted);font-size:.7rem;padding:12px 8px;">No trials recorded yet.</td></tr>';return;}
+  tb.innerHTML=state.trialData.map((t,i)=>`<tr><td>#${i+1}</td><td>${t.assessment.replace('Shoulder ','Sh. ')}<br/><span style="font-size:.6rem;color:var(--muted)">${t.side}</span></td><td style="font-weight:600;color:var(--accent)">${t.peakROM}°</td><td><span style="font-size:.68rem;color:${t.compensation==='None'?'var(--accent2)':t.compensation==='Mild'?'var(--warn)':'var(--danger)'}">${t.compensation}</span></td><td><span class="grade-badge grade-${t.grade}">${t.grade}</span></td></tr>`).join('');
+}
+function showReport(){
+  if(!state.trialData.length){alert('No trials recorded yet. Complete at least one trial first.');return;}
+  const patient=document.getElementById('patientName').value||'Unknown';
+  const date=new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'long',year:'numeric'});
+  document.getElementById('reportMeta').textContent=`Patient: ${patient}  ·  Date: ${date}  ·  Trials: ${state.trialData.length}`;
+  const groups={};
+  for(const t of state.trialData){const k=`${t.assessId}_${t.side}`;if(!groups[k])groups[k]={name:t.assessment,side:t.side,trials:[]};groups[k].trials.push(t);}
+  let html='';
+  for(const k of Object.keys(groups)){
+    const g=groups[k],best=Math.max(...g.trials.map(t=>t.peakROM)),avg=Math.round(g.trials.reduce((a,t)=>a+t.peakROM,0)/g.trials.length);
+    const a=ASSESSMENTS.find(a=>a.id===g.trials[0].assessId),pct=Math.round(best/a.normalMax*100),comp=g.trials.filter(t=>t.compensation!=='None').length;
+    const bg=g.trials.reduce((b,t)=>t.peakROM>b.peakROM?t:b).grade;
+    html+=`<div class="report-section"><div class="report-section-title">${g.name} — ${g.side} Side</div><div class="report-grid"><div class="report-card"><div class="report-card-label">Best ROM</div><div class="report-card-val">${best}°</div><div class="report-card-sub">${pct}% of normal (${a.normalMax}°)</div></div><div class="report-card"><div class="report-card-label">Average ROM</div><div class="report-card-val">${avg}°</div><div class="report-card-sub">Across ${g.trials.length} trial${g.trials.length>1?'s':''}</div></div><div class="report-card"><div class="report-card-label">Clinical Grade</div><div class="report-card-val">${bg}</div><div class="report-card-sub">${bg==='A'?'Within normal limits':bg==='B'?'Mildly restricted':bg==='C'?'Moderately restricted':'Severely restricted'}</div></div><div class="report-card"><div class="report-card-label">Compensation</div><div class="report-card-val" style="color:${comp===0?'var(--accent2)':comp<g.trials.length?'var(--warn)':'var(--danger)'}">${comp===0?'None':comp+'/'+g.trials.length+' trials'}</div><div class="report-card-sub">${comp===0?'No compensatory patterns':'Compensatory movement detected'}</div></div></div><div style="margin-top:12px;">${best>=a.goodThreshold?`<div class="report-finding positive">✅ ROM within functional limits. Patient demonstrates adequate ${g.name.toLowerCase()} for daily activities.</div>`:best>=a.fairThreshold?`<div class="report-finding neutral">⚠️ ROM mildly restricted (${best}° vs normal ${a.normalMax}°). Consider targeted stretching and mobilisation.</div>`:`<div class="report-finding negative">❌ ROM significantly restricted (${best}°, ${100-pct}% deficit). Therapeutic intervention recommended.</div>`}${comp>0?`<div class="report-finding negative">⚠️ Compensatory patterns in ${comp} trial(s): torso lean and/or shoulder elevation.</div>`:`<div class="report-finding positive">✅ No significant compensatory patterns observed.</div>`}</div></div>`;
   }
+  document.getElementById('reportContent').innerHTML=html;document.getElementById('reportModal').classList.add('show');
+}
+function closeReport(){document.getElementById('reportModal').classList.remove('show');}
+function exportCSV(){
+  const patient=document.getElementById('patientName').value||'Unknown',date=new Date().toISOString().split('T')[0];
+  let csv='Patient,Date,Trial,Assessment,Side,Peak ROM (deg),Torso Lean (deg),Shoulder Elevation (%),Compensation,Grade\n';
+  for(const t of state.trialData)csv+=`"${patient}","${date}",${t.trialNum},"${t.assessment}","${t.side}",${t.peakROM},${t.torsoLean},${t.shoulderElev},"${t.compensation}","${t.grade}"\n`;
+  const blob=new Blob([csv],{type:'text/csv'}),url=URL.createObjectURL(blob),a=document.createElement('a');
+  a.href=url;a.download=`physioassess_${patient.replace(/\s/g,'_')}_${date}.csv`;a.click();URL.revokeObjectURL(url);
 }
 
-function renderTrialTable() {
-  const tbody = document.getElementById('trialBody');
-  if (state.trialData.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="5" style="color:var(--muted);font-size:0.7rem;padding:12px 8px;">No trials recorded yet.</td></tr>';
-    return;
-  }
-  tbody.innerHTML = state.trialData.map((t,i)=>`
-    <tr>
-      <td>#${i+1}</td>
-      <td>${t.assessment.replace('Shoulder ','Sh. ')}<br/><span style="font-size:0.6rem;color:var(--muted)">${t.side}</span></td>
-      <td style="font-weight:600;color:var(--accent)">${t.peakROM}°</td>
-      <td><span style="font-size:0.68rem;color:${t.compensation==='None'?'var(--accent2)':t.compensation==='Mild'?'var(--warn)':'var(--danger)'}">${t.compensation}</span></td>
-      <td><span class="grade-badge grade-${t.grade}">${t.grade}</span></td>
-    </tr>`).join('');
-}
-
-// ══════════════════════════════════════════════════════════════════════════════
-// REPORT
-// ══════════════════════════════════════════════════════════════════════════════
-function showReport() {
-  if (state.trialData.length === 0) {
-    alert('No trials recorded yet. Complete at least one trial first.');
-    return;
-  }
-  const patient = document.getElementById('patientName').value || 'Unknown';
-  const date    = new Date().toLocaleDateString('en-GB', {day:'2-digit',month:'long',year:'numeric'});
-  document.getElementById('reportMeta').textContent =
-    `Patient: ${patient}  ·  Date: ${date}  ·  Trials: ${state.trialData.length}`;
-
-  // Group by assessment
-  const groups = {};
-  for (const t of state.trialData) {
-    const key = `${t.assessId}_${t.side}`;
-    if (!groups[key]) groups[key] = {name:t.assessment, side:t.side, trials:[]};
-    groups[key].trials.push(t);
-  }
-
-  let html = '';
-  for (const key of Object.keys(groups)) {
-    const g = groups[key];
-    const best  = Math.max(...g.trials.map(t=>t.peakROM));
-    const avg   = Math.round(g.trials.reduce((a,t)=>a+t.peakROM,0)/g.trials.length);
-    const a     = ASSESSMENTS.find(a=>a.id===g.trials[0].assessId);
-    const pct   = Math.round(best/a.normalMax*100);
-    const compTrials = g.trials.filter(t=>t.compensation!=='None').length;
-    const bestGrade = g.trials.reduce((b,t)=>t.peakROM>b.peakROM?t:b).grade;
-
-    html += `
-    <div class="report-section">
-      <div class="report-section-title">${g.name} — ${g.side} Side</div>
-      <div class="report-grid">
-        <div class="report-card">
-          <div class="report-card-label">Best ROM</div>
-          <div class="report-card-val">${best}°</div>
-          <div class="report-card-sub">${pct}% of normal (${a.normalMax}°)</div>
-        </div>
-        <div class="report-card">
-          <div class="report-card-label">Average ROM</div>
-          <div class="report-card-val">${avg}°</div>
-          <div class="report-card-sub">Across ${g.trials.length} trial${g.trials.length>1?'s':''}</div>
-        </div>
-        <div class="report-card">
-          <div class="report-card-label">Clinical Grade</div>
-          <div class="report-card-val">${bestGrade}</div>
-          <div class="report-card-sub">${bestGrade==='A'?'Within normal limits':bestGrade==='B'?'Mildly restricted':bestGrade==='C'?'Moderately restricted':'Severely restricted'}</div>
-        </div>
-        <div class="report-card">
-          <div class="report-card-label">Compensation</div>
-          <div class="report-card-val" style="color:${compTrials===0?'var(--accent2)':compTrials<g.trials.length?'var(--warn)':'var(--danger)'}">${compTrials===0?'None':compTrials+'/'+g.trials.length+' trials'}</div>
-          <div class="report-card-sub">${compTrials===0?'No compensatory patterns':'Compensatory movement detected'}</div>
-        </div>
-      </div>
-      <div style="margin-top:12px;">
-        ${best>=a.goodThreshold
-          ? `<div class="report-finding positive">✅ ROM within functional limits. Patient demonstrates adequate ${g.name.toLowerCase()} for daily activities.</div>`
-          : best>=a.fairThreshold
-          ? `<div class="report-finding neutral">⚠️ ROM mildly restricted (${best}° vs normal ${a.normalMax}°). Consider targeted stretching and mobilisation.</div>`
-          : `<div class="report-finding negative">❌ ROM significantly restricted (${best}°, ${100-pct}% deficit). Therapeutic intervention recommended.</div>`
-        }
-        ${compTrials>0
-          ? `<div class="report-finding negative">⚠️ Compensatory patterns noted in ${compTrials} trial(s): torso lateral lean and/or shoulder girdle elevation. May indicate pain avoidance, weakness, or restricted capsular mobility.</div>`
-          : `<div class="report-finding positive">✅ No significant compensatory movement patterns observed.</div>`
-        }
-      </div>
-    </div>`;
-  }
-
-  document.getElementById('reportContent').innerHTML = html;
-  document.getElementById('reportModal').classList.add('show');
-}
-
-function closeReport() {
-  document.getElementById('reportModal').classList.remove('show');
-}
-
-function exportCSV() {
-  const patient = document.getElementById('patientName').value||'Unknown';
-  const date = new Date().toISOString().split('T')[0];
-  let csv = 'Patient,Date,Trial,Assessment,Side,Peak ROM (deg),Torso Lean (deg),Shoulder Elevation (%),Compensation,Grade\n';
-  for (const t of state.trialData) {
-    csv += `"${patient}","${date}",${t.trialNum},"${t.assessment}","${t.side}",${t.peakROM},${t.torsoLean},${t.shoulderElev},"${t.compensation}","${t.grade}"\n`;
-  }
-  const blob = new Blob([csv], {type:'text/csv'});
-  const url  = URL.createObjectURL(blob);
-  const a    = document.createElement('a');
-  a.href=url; a.download=`physioassess_${patient.replace(/\s/g,'_')}_${date}.csv`;
-  a.click(); URL.revokeObjectURL(url);
-}
-
-// ══════════════════════════════════════════════════════════════════════════════
-// MEDIAPIPE INIT
-// ══════════════════════════════════════════════════════════════════════════════
-const videoEl = document.getElementById('video');
-const camCanvas = document.getElementById('cam');
-const camCtx = camCanvas.getContext('2d');
-
-const pose = new Pose({
-  locateFile: f=>`https://cdn.jsdelivr.net/npm/@mediapipe/pose/${f}`,
-});
-pose.setOptions({
-  modelComplexity: 1,
-  smoothLandmarks: true,
-  minDetectionConfidence: 0.6,
-  minTrackingConfidence: 0.6,
-});
-
-pose.onResults(results => {
-  camCanvas.width  = results.image.width;
-  camCanvas.height = results.image.height;
-  const w = camCanvas.width, h = camCanvas.height;
-
-  camCtx.clearRect(0,0,w,h);
-  camCtx.drawImage(results.image,0,0,w,h);
-
-  if (results.poseLandmarks) {
-    state.lastLandmarks = results.poseLandmarks;
-    const data = computeAngles(results.poseLandmarks, w, h);
-
-    state.currentAngle = data.primaryAngle;
-    state.torsoLean    = data.torsoLean;
-    state.shoulderElev = data.shoulderElev;
-
-    if (state.isRecording) {
-      if (data.primaryAngle > state.peakAngle) state.peakAngle = data.primaryAngle;
-      if (data.torsoLean    > state.peakTorsoLean) state.peakTorsoLean = data.torsoLean;
-      if (data.shoulderElev > state.peakShoulderElev) state.peakShoulderElev = data.shoulderElev;
-      state.frameCount++;
-      if (state.frameCount % 3 === 0) pushTrace(data.primaryAngle);
+// MediaPipe
+const videoEl=document.getElementById('video'),camCanvas=document.getElementById('cam'),camCtx=camCanvas.getContext('2d');
+const pose=new Pose({locateFile:f=>`https://cdn.jsdelivr.net/npm/@mediapipe/pose/${f}`});
+pose.setOptions({modelComplexity:1,smoothLandmarks:true,minDetectionConfidence:.6,minTrackingConfidence:.6});
+pose.onResults(results=>{
+  camCanvas.width=results.image.width;camCanvas.height=results.image.height;
+  const w=camCanvas.width,h=camCanvas.height;
+  camCtx.clearRect(0,0,w,h);camCtx.drawImage(results.image,0,0,w,h);
+  if(results.poseLandmarks){
+    state.lastLandmarks=results.poseLandmarks;
+    const data=computeAngles(results.poseLandmarks,w,h);
+    state.currentAngle=data.primaryAngle;state.torsoLean=data.torsoLean;state.shoulderElev=data.shoulderElev;
+    if(state.isRecording){
+      if(data.primaryAngle>state.peakAngle)state.peakAngle=data.primaryAngle;
+      if(data.torsoLean>state.peakTorsoLean)state.peakTorsoLean=data.torsoLean;
+      if(data.shoulderElev>state.peakShoulderElev)state.peakShoulderElev=data.shoulderElev;
+      state.frameCount++;if(state.frameCount%3===0)pushTrace(data.primaryAngle);
     }
-
-    drawFrame(results.poseLandmarks, w, h, null, camCtx);
-    updateMetricsBar(data);
+    drawFrame(results.poseLandmarks,w,h,null,camCtx);updateMetricsBar(data);
   }
-
-  // No-person message
-  if (!results.poseLandmarks && state.isRecording) {
-    camCtx.fillStyle='rgba(239,68,68,0.12)';
-    camCtx.fillRect(0,0,w,h);
-  }
+  if(!results.poseLandmarks&&state.isRecording){camCtx.fillStyle='rgba(239,68,68,.12)';camCtx.fillRect(0,0,w,h);}
 });
 
-const camera = new Camera(videoEl, {
-  onFrame: async () => { await pose.send({image: videoEl}); },
-  width: 1280, height: 720,
-});
-camera.start().then(()=>{
-  document.getElementById('startPrompt').classList.add('hidden');
-});
+const isMobile=/Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
+const camera=new Camera(videoEl,{onFrame:async()=>{await pose.send({image:videoEl});},width:1280,height:720});
+camera.start().then(()=>{document.getElementById('startPrompt').classList.add('hidden');});
 
-// ══════════════════════════════════════════════════════════════════════════════
-// INIT
-// ══════════════════════════════════════════════════════════════════════════════
-document.getElementById('sessionDate').textContent =
-  new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
-selectAssessment(0);
-initChart();
+document.getElementById('sessionDate').textContent=new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
+selectAssessment(0);initChart();syncFabs();
 </script>
 </body>
 </html>
